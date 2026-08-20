@@ -9,11 +9,16 @@
 import * as THREE from 'three';
 import { mat, PALETTE } from './materials.js';
 
+/** Uniform upsize of the whole shell. 1 = the original 38 m-airframe fit. */
+export const HANGAR_SCALE = 1.5;
+
+const S = HANGAR_SCALE;
+
 export const HANGAR = {
-  halfWidth: 34,
-  depth: 46, // extends from z = -DEPTH to z = +DEPTH
-  wallHeight: 12,
-  crown: 21,
+  halfWidth: 34 * S,
+  depth: 46 * S, // extends from z = -DEPTH to z = +DEPTH
+  wallHeight: 12 * S,
+  crown: 21 * S,
 };
 
 /** The arch cross-section, as a closed 2D shape in XY. */
@@ -60,7 +65,7 @@ function backWall() {
   return wall;
 }
 
-/** Roof trusses, instanced across the depth. */
+/** Roof trusses, instanced across the depth. Currently not added to the scene. */
 function trusses() {
   const g = new THREE.Group();
   g.name = 'trusses';
@@ -86,7 +91,7 @@ function doors() {
   g.name = 'doors';
 
   const leafW = HANGAR.halfWidth;
-  const leafGeo = new THREE.BoxGeometry(leafW, HANGAR.wallHeight + 6, 0.7);
+  const leafGeo = new THREE.BoxGeometry(leafW, HANGAR.wallHeight + 6 * S, 0.7);
   // Ribbed face: a few horizontal rails read as a real door at grazing angles.
   for (const side of [-1, 1]) {
     const leaf = new THREE.Group();
@@ -97,11 +102,11 @@ function doors() {
     const railGeo = new THREE.BoxGeometry(leafW - 0.4, 0.22, 0.9);
     for (let i = 0; i < 5; i++) {
       const rail = new THREE.Mesh(railGeo, mat.metal());
-      rail.position.y = -6 + i * 3.4;
+      rail.position.y = (-6 + i * 3.4) * S;
       leaf.add(rail);
     }
 
-    leaf.position.set((side * leafW) / 2, (HANGAR.wallHeight + 6) / 2 - 0.6, HANGAR.depth);
+    leaf.position.set((side * leafW) / 2, (HANGAR.wallHeight + 6 * S) / 2 - 0.6, HANGAR.depth);
     leaf.userData.side = side;
     leaf.userData.shut = leaf.position.x;
     g.add(leaf);
@@ -116,11 +121,11 @@ function workLights() {
   g.name = 'worklights';
 
   const positions = [
-    [-18, HANGAR.wallHeight + 2.2, -18],
-    [18, HANGAR.wallHeight + 2.2, -18],
-    [-18, HANGAR.wallHeight + 2.2, 4],
-    [18, HANGAR.wallHeight + 2.2, 4],
-    [0, HANGAR.crown - 1.5, -6],
+    [-18 * S, HANGAR.wallHeight + 2.2 * S, -18 * S],
+    [18 * S, HANGAR.wallHeight + 2.2 * S, -18 * S],
+    [-18 * S, HANGAR.wallHeight + 2.2 * S, 4 * S],
+    [18 * S, HANGAR.wallHeight + 2.2 * S, 4 * S],
+    [0, HANGAR.crown - 1.5 * S, -6 * S],
   ];
 
   positions.forEach((p, i) => {
@@ -134,7 +139,7 @@ function workLights() {
     lens.name = `lens-${i}`;
     g.add(lens);
 
-    const light = new THREE.PointLight(0xffe9c4, 0, 60, 2);
+    const light = new THREE.PointLight(0xffe9c4, 0, 60 * S, 2);
     light.position.set(p[0], p[1] - 1, p[2]);
     light.name = `wl-${i}`;
     g.add(light);
@@ -159,11 +164,11 @@ function floor() {
 
   // Bay outline in signal blue — the hangar's own "work package" boundary.
   const bay = new THREE.Mesh(
-    new THREE.PlaneGeometry(46, 46),
+    new THREE.PlaneGeometry(46 * S, 46 * S),
     mat.annotationFill(PALETTE.signal2, 0.06)
   );
   bay.rotation.x = -Math.PI / 2;
-  bay.position.set(0, 0.02, -2);
+  bay.position.set(0, 0.02, -2 * S);
   g.add(bay);
 
   return g;
@@ -172,7 +177,8 @@ function floor() {
 export function createHangar() {
   const g = new THREE.Group();
   g.name = 'hangar';
-  g.add(shell(), backWall(), trusses(), floor(), doors(), workLights());
+  // Ceiling trusses are off for now — re-add `trusses()` here to bring the bars back.
+  g.add(shell(), backWall(), floor(), doors(), workLights());
 
   g.userData = {
     doors: g.getObjectByName('doors'),
