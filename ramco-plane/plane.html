@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Aircraft Free Inspection & Positioning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #143b6c;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  #stage {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    cursor: grab;
+    z-index: 1;
+  }
+  #stage.dragging {
+    cursor: move;
+  }
+  #stage:active {
+    cursor: grabbing;
+  }
+  #stage canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Control HUD Overlay */
+  #hud {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    pointer-events: none;
+  }
+
+  .hud-panel {
+    pointer-events: auto;
+    background: rgba(10, 30, 56, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 0.7rem 1.2rem;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .hud-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #e2eaf4;
+    padding: 0.55rem 1rem;
+    border-radius: 20px;
+    font-family: 'Archivo', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: all 0.2s ease;
+  }
+
+  .hud-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .hud-btn.active {
+    background: #d3823f;
+    border-color: #d3823f;
+    color: #0b1c2d;
+    box-shadow: 0 0 12px rgba(211, 130, 63, 0.5);
+  }
+
+  /* Dedicated On-Screen Drag Pad Button */
+  #drag-pad-btn {
+    background: rgba(211, 130, 63, 0.2);
+    border: 1.5px solid #d3823f;
+    color: #ffd6ad;
+    cursor: move;
+  }
+  #drag-pad-btn:active {
+    background: #d3823f;
+    color: #0b1c2d;
+    scale: 0.96;
+  }
+
+  /* Real-time Telemetry Readout */
+  #telemetry {
+    pointer-events: auto;
+    background: rgba(10, 30, 56, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 0.45rem 1.1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.7rem;
+    color: #a4c4e8;
+    display: flex;
+    gap: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+  #telemetry b {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  /* Copy Toast Notification */
+  #toast {
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: #d3823f;
+    color: #0b1c2d;
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div id="toast">Pose Copied to Clipboard!</div>
+
+  <div id="hud">
+    <div id="telemetry">
+      <span>POS: X:<b id="tel-x">0.0</b> Y:<b id="tel-y">0.0</b> Z:<b id="tel-z">0.0</b></span>
+      <span>YAW:<b id="tel-yaw">0°</b> PITCH:<b id="tel-pitch">0°</b></span>
+      <span>DIST:<b id="tel-dist">70</b></span>
+    </div>
+
+    <div class="hud-panel">
+      <button id="btn-rotate" class="hud-btn active" type="button">🔄 Orbit Rotate</button>
+      <button id="btn-drag-mode" class="hud-btn" type="button">✋ Drag Position</button>
+      <button id="drag-pad-btn" class="hud-btn" type="button">✥ Drag Here</button>
+      <button id="btn-center" class="hud-btn" type="button">⌖ Center</button>
+      <button id="btn-copy" class="hud-btn" type="button">📋 Copy Pose</button>
+    </div>
+  </div>
+
+  <script type="module" src="./src/plane-showcase.js"></script>
+</body>
+</html>

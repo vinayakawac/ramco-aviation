@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ramco Aviation — one platform, wheels up</title>
+<meta name="description" content="Aviation enterprise software powering 4,000+ aircraft and 24,000+ users. Line, component, engine, hangar and heavy maintenance, flight operations, fleet records and supply chain on one platform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./src/styles/main.css">
+</head>
+<body>
+
+<div id="stage" aria-hidden="true"></div>
+<div id="vignette" aria-hidden="true"></div>
+
+<div id="chrome">
+  <a class="wordmark" href="#top">Ramco <span>Aviation</span></a>
+
+  <nav id="nav" aria-label="Sections"></nav>
+
+  <div id="plate"><span>Fixed &amp; rotor wing</span></div>
+
+  <div id="cue">
+    <span class="ring" aria-hidden="true"><i></i></span>
+    <p class="label">Scroll to continue</p>
+  </div>
+
+  <div id="readout">
+    <p class="label"><b id="ro-phase">HANGAR</b></p>
+    <p class="label">ATT <b id="ro-att">000</b>° · ALT <b id="ro-alt">00000</b> FT</p>
+  </div>
+</div>
+
+<svg id="callout-svg" aria-hidden="true">
+  <defs>
+    <filter id="callout-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#d3823f" flood-opacity="0.8" />
+    </filter>
+  </defs>
+  <g id="schematic-lines-group" class="schematic-lines" opacity="0"></g>
+</svg>
+
+<div id="platform-deck" class="platform-deck">
+  <div id="zone-lead-card" class="zone-lead-card">
+    <p class="zone-badge-line"><span id="p-lead-num" class="amber">01</span> &nbsp; <span id="p-lead-zone">The flight deck and dispatch</span></p>
+    <h3 id="p-lead-title">Flight Operations & EFB</h3>
+    <p id="p-lead-why" class="why"></p>
+    <p id="p-lead-pain" class="pain"></p>
+    <a id="p-lead-src" class="srclink" href="#" target="_blank" rel="noopener"></a>
+  </div>
+
+  <div class="deck-center-corridor"></div>
+
+  <div id="zone-right-card" class="zone-right-card">
+    <div class="right-card-header">
+      <span id="p-right-num" class="amber-badge">01</span>
+      <h4 id="p-right-title">Flight Operations & EFB</h4>
+    </div>
+    <ul id="p-right-items" class="items"></ul>
+    <div class="annot">
+      <p id="p-right-cap" class="label"></p>
+      <span id="p-right-expr" class="expr"></span>
+    </div>
+  </div>
+</div>
+
+<main id="scroll"></main>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

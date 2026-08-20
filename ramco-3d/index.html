@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ramco Aviation | MRO, M&amp;E and Flight Operations software on one platform</title>
+<meta name="description" content="Aviation enterprise software powering 4,000+ aircraft and 24,000+ users. Line, component, engine, hangar and heavy maintenance, flight operations, fleet records and defense sustainment on a single platform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./src/styles/main.css">
+</head>
+<body>
+
+<div id="loader">Spooling up</div>
+
+<!-- fixed 3D stage; the whole journey renders here -->
+<div id="stage" aria-hidden="true"></div>
+
+<!-- HUD: brand, station rail, telemetry -->
+<div id="hud">
+  <div id="progressbar"></div>
+  <a class="skiplink" href="#station-epilogue">Skip the flight — jump to the full content</a>
+  <a class="brandmark" href="#station-hero">
+    <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13l9-2V4a1 1 0 0 1 2 0v7l9 2v2l-9-1.5V19l3 2v1l-4-1-4 1v-1l3-2v-5.5L2 15z"/></svg></span>
+    <span><b>Ramco</b><span>Aviation</span></span>
+  </a>
+  <nav id="rail" aria-label="Journey stations"></nav>
+  <div id="telemetry">
+    <div><b id="tl-phase">HANGAR</b></div>
+    <div>GS <b id="tl-gs">000</b> KT · ALT <b id="tl-alt">00000</b> FT</div>
+  </div>
+</div>
+
+<!-- scroll spine; stations are injected here -->
+<main id="scroll"></main>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
