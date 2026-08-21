@@ -99,17 +99,21 @@
 
   if (opSvg && btnDisconnected && btnUnified) {
     const nodes = [
-      { id: 'maint', label: 'Maintenance', x: 480, y: 65 },
-      { id: 'eng', label: 'Engineering', x: 740, y: 110 },
-      { id: 'warr', label: 'Warranty', x: 220, y: 110 },
-      { id: 'supply', label: 'Supply chain', x: 810, y: 240 },
-      { id: 'records', label: 'Records', x: 150, y: 240 },
-      { id: 'contracts', label: 'Contracts', x: 740, y: 370 },
-      { id: 'flight', label: 'Flight ops', x: 220, y: 370 },
-      { id: 'fin', label: 'Finance', x: 480, y: 415 },
+      { id: 'maint', label: 'Maintenance', x: 490, y: 58, role: 'Task cards · Work packages' },
+      { id: 'eng', label: 'Engineering', x: 770, y: 110, role: 'AMM/EMM · Airworthiness' },
+      { id: 'warr', label: 'Warranty', x: 210, y: 110, role: 'Claims · Coverage rules' },
+      { id: 'supply', label: 'Supply chain', x: 845, y: 250, role: 'Spec 2000 · Part readiness' },
+      { id: 'records', label: 'Records', x: 135, y: 250, role: 'CAMO · As-Built/Actual' },
+      { id: 'contracts', label: 'Contracts', x: 770, y: 390, role: 'NTE caps · Billing terms' },
+      { id: 'flight', label: 'Flight ops', x: 210, y: 390, role: 'EFB · Crew Anywhere' },
+      { id: 'fin', label: 'Finance', x: 490, y: 442, role: 'Automated invoice · WIP' },
     ];
 
+    let currentMode = 'disconnected';
+    let hoveredNode = null;
+
     function renderDiagram(mode) {
+      currentMode = mode;
       btnDisconnected.classList.toggle('active', mode === 'disconnected');
       btnDisconnected.setAttribute('aria-selected', mode === 'disconnected');
       btnUnified.classList.toggle('active', mode === 'unified');
@@ -131,13 +135,21 @@
 
       let svgHtml = `
         <defs>
-          <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
+          <filter id="glow-cyan" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="4" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
+          <filter id="glow-red" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
           <linearGradient id="hubGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#1e293b" />
-            <stop offset="100%" stop-color="#0f172a" />
+            <stop offset="0%" stop-color="#141e33" />
+            <stop offset="100%" stop-color="#080c14" />
+          </linearGradient>
+          <linearGradient id="pulseLineGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8" />
+            <stop offset="100%" stop-color="#60a5fa" stop-opacity="0.2" />
           </linearGradient>
         </defs>
       `;
@@ -148,65 +160,79 @@
           for (let j = i + 1; j < nodes.length; j++) {
             const n1 = nodes[i];
             const n2 = nodes[j];
+            const isHighlighted = hoveredNode === n1.id || hoveredNode === n2.id;
+            const opacity = hoveredNode ? (isHighlighted ? 0.85 : 0.08) : 0.28;
+            const strokeColor = isHighlighted ? '#f87171' : 'rgba(239, 68, 68, 0.45)';
+            const strokeWidth = isHighlighted ? 1.6 : 1.1;
             const mx = (n1.x + n2.x) / 2;
             const my = (n1.y + n2.y) / 2;
             const isFriction = (i * 3 + j * 7) % 4 === 0;
 
             svgHtml += `
               <line x1="${n1.x}" y1="${n1.y}" x2="${n2.x}" y2="${n2.y}"
-                stroke="rgba(248, 113, 113, 0.24)" stroke-width="1.2" stroke-dasharray="4,4" />
+                stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-dasharray="4,4" opacity="${opacity}" />
             `;
-            if (isFriction) {
+            if (isFriction && (!hoveredNode || isHighlighted)) {
               svgHtml += `
-                <g transform="translate(${mx}, ${my})" opacity="0.75">
-                  <circle r="5" fill="#140808" stroke="#ef4444" stroke-width="1" />
-                  <line x1="-2" y1="-2" x2="2" y2="2" stroke="#f87171" stroke-width="1" />
-                  <line x1="2" y1="-2" x2="-2" y2="2" stroke="#f87171" stroke-width="1" />
+                <g transform="translate(${mx}, ${my})" opacity="${hoveredNode && !isHighlighted ? 0.1 : 0.8}">
+                  <circle r="5" fill="#140606" stroke="#ef4444" stroke-width="1" />
+                  <line x1="-2" y1="-2" x2="2" y2="2" stroke="#fca5a5" stroke-width="1.2" />
+                  <line x1="2" y1="-2" x2="-2" y2="2" stroke="#fca5a5" stroke-width="1.2" />
                 </g>
               `;
             }
           }
         }
       } else {
-        // Unified mode: Central Hub at (480, 240) with 8 radiating clean channels
-        const cx = 480, cy = 240;
+        // Unified mode: Central Hub at (490, 250) with 8 radiating clean bus channels
+        const cx = 490, cy = 250;
 
-        nodes.forEach((n) => {
+        nodes.forEach((n, idx) => {
+          const isHighlighted = hoveredNode === n.id;
+          const strokeOpacity = hoveredNode ? (isHighlighted ? 0.9 : 0.2) : 0.55;
+          const strokeWidth = isHighlighted ? 2.4 : 1.6;
+
           svgHtml += `
             <line x1="${cx}" y1="${cy}" x2="${n.x}" y2="${n.y}"
-              stroke="rgba(59, 130, 246, 0.45)" stroke-width="1.8" />
-            <circle cx="${(cx + n.x) / 2}" cy="${(cy + n.y) / 2}" r="3" fill="#60a5fa" filter="url(#glow-cyan)">
-              <animate attributeName="opacity" values="0.2;1;0.2" dur="2.4s" repeatCount="indefinite" />
+              stroke="rgba(59, 130, 246, ${strokeOpacity})" stroke-width="${strokeWidth}" />
+            <circle cx="${cx + (n.x - cx) * 0.5}" cy="${cy + (n.y - cy) * 0.5}" r="3.2" fill="#60a5fa" filter="url(#glow-cyan)">
+              <animate attributeName="opacity" values="0.2;1;0.2" dur="${2.0 + (idx % 3) * 0.4}s" repeatCount="indefinite" />
             </circle>
           `;
         });
 
-        // Central Ramco Kernel Hub
+        // Central Ramco Platform Hub
         svgHtml += `
-          <g transform="translate(480, 240)">
-            <circle r="48" fill="url(#hubGrad)" stroke="#3b82f6" stroke-width="2" filter="url(#glow-cyan)" />
-            <circle r="56" fill="none" stroke="rgba(59, 130, 246, 0.3)" stroke-width="1" stroke-dasharray="6,4">
-              <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite" />
+          <g transform="translate(${cx}, ${cy})">
+            <circle r="68" fill="none" stroke="rgba(59, 130, 246, 0.15)" stroke-width="1" stroke-dasharray="2,6" />
+            <circle r="54" fill="none" stroke="rgba(59, 130, 246, 0.35)" stroke-width="1.2" stroke-dasharray="6,4">
+              <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="24s" repeatCount="indefinite" />
             </circle>
-            <text text-anchor="middle" y="-5" fill="#fff" font-family="var(--f-sans)" font-size="11" font-weight="600" letter-spacing="0.08em">RAMCO</text>
-            <text text-anchor="middle" y="11" fill="#60a5fa" font-family="var(--f-mono)" font-size="9" letter-spacing="0.1em">ONE PLATFORM</text>
+            <circle r="46" fill="url(#hubGrad)" stroke="#3b82f6" stroke-width="1.8" filter="url(#glow-cyan)" />
+            <text text-anchor="middle" y="-6" fill="#ffffff" font-family="var(--f-sans)" font-size="11" font-weight="600" letter-spacing="0.1em">RAMCO</text>
+            <text text-anchor="middle" y="10" fill="#60a5fa" font-family="var(--f-mono)" font-size="9" letter-spacing="0.12em">ONE PLATFORM</text>
           </g>
         `;
       }
 
-      // Draw the 8 function node pills
+      // Draw the 8 function node cards
       nodes.forEach((n) => {
-        const w = 114;
-        const h = 32;
-        const fill = mode === 'unified' ? '#090d16' : '#0a0c10';
-        const stroke = mode === 'unified' ? 'rgba(59, 130, 246, 0.65)' : 'rgba(255, 255, 255, 0.16)';
-        const textFill = mode === 'unified' ? '#ffffff' : '#e2e8f0';
+        const w = 120;
+        const h = 34;
+        const isHovered = hoveredNode === n.id;
+        const fill = mode === 'unified' ? (isHovered ? '#0e172a' : '#080c16') : (isHovered ? '#181212' : '#090a0e');
+        const stroke = mode === 'unified'
+          ? (isHovered ? '#60a5fa' : 'rgba(59, 130, 246, 0.6)')
+          : (isHovered ? '#f87171' : 'rgba(255, 255, 255, 0.18)');
+        const textFill = mode === 'unified' ? '#ffffff' : (isHovered ? '#ffffff' : '#d1d5db');
+        const dotColor = mode === 'unified' ? '#38bdf8' : '#f87171';
 
         svgHtml += `
-          <g transform="translate(${n.x}, ${n.y})">
+          <g class="op-node" data-id="${n.id}" transform="translate(${n.x}, ${n.y})" style="cursor: pointer;">
             <rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="6"
-              fill="${fill}" stroke="${stroke}" stroke-width="1.2" />
-            <text text-anchor="middle" y="4" fill="${textFill}"
+              fill="${fill}" stroke="${stroke}" stroke-width="${isHovered ? 1.6 : 1.1}" />
+            <circle cx="${-w / 2 + 12}" cy="0" r="2.5" fill="${dotColor}" />
+            <text text-anchor="middle" x="4" y="4" fill="${textFill}"
               font-family="var(--f-sans)" font-size="12" font-weight="500" letter-spacing="-0.01em">
               ${n.label}
             </text>
@@ -215,6 +241,18 @@
       });
 
       opSvg.innerHTML = svgHtml;
+
+      // Attach hover listeners to nodes
+      opSvg.querySelectorAll('.op-node').forEach((el) => {
+        el.addEventListener('mouseenter', () => {
+          hoveredNode = el.dataset.id;
+          renderDiagram(currentMode);
+        });
+        el.addEventListener('mouseleave', () => {
+          hoveredNode = null;
+          renderDiagram(currentMode);
+        });
+      });
     }
 
     btnDisconnected.addEventListener('click', () => renderDiagram('disconnected'));

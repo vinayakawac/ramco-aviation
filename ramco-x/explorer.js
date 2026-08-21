@@ -436,71 +436,246 @@ function boot() {
     if (subjects[name]) stage = subjects[name];
   }
 
-  /* ---------- subject: stores ----------
-     Racking, cartons and two rotable transit cases. Procedural, because
-     the repo has no stores model to load. */
+  /* ---------- subject: stores (Integrated Supply Chain Hub) ----------
+     A small-scale modern aviation supply chain distribution hub & automated
+     rotable parts facility with high-bay ASRS storage, loading docks,
+     rotable containers, and rooftop telemetry. */
   function buildStores() {
     const g = new THREE.Group();
-    const steel = new THREE.MeshStandardMaterial({ color: 0x6f747c, roughness: 0.5, metalness: 0.8 });
-    const carton = new THREE.MeshStandardMaterial({ color: 0x8d8f94, roughness: 0.85, metalness: 0.05 });
-    const caseMat = new THREE.MeshStandardMaterial({ color: 0xb6bac2, roughness: 0.3, metalness: 0.85 });
 
-    const BAY = 3.4, DEPTH = 2.2, SHELF = 1.5, BAYS = 3, LEVELS = 3;
-    const W = BAY * BAYS;
+    // Architectural & Industrial Materials
+    const MAT = {
+      facadeDark: new THREE.MeshStandardMaterial({ color: 0x14161b, roughness: 0.35, metalness: 0.85 }),
+      facadeRibbed: new THREE.MeshStandardMaterial({ color: 0x222630, roughness: 0.42, metalness: 0.8 }),
+      steelFrame: new THREE.MeshStandardMaterial({ color: 0x0c0e12, roughness: 0.55, metalness: 0.92 }),
+      trimAluminum: new THREE.MeshStandardMaterial({ color: 0xc8cdd8, roughness: 0.22, metalness: 0.95 }),
+      glassTint: new THREE.MeshStandardMaterial({ color: 0x162232, roughness: 0.12, metalness: 0.92, transparent: true, opacity: 0.72 }),
+      concreteFloor: new THREE.MeshStandardMaterial({ color: 0x1f2228, roughness: 0.5, metalness: 0.2 }),
+      shutterSteel: new THREE.MeshStandardMaterial({ color: 0x4a505b, roughness: 0.45, metalness: 0.85 }),
+      hazardYellow: new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.4, metalness: 0.3 }),
+      asrsBlue: new THREE.MeshStandardMaterial({ color: 0x0284c7, emissive: 0x0284c7, emissiveIntensity: 2.2 }),
+      beaconAmber: new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 2.0 }),
+      hvacGalv: new THREE.MeshStandardMaterial({ color: 0x78808d, roughness: 0.4, metalness: 0.85 }),
+      solarDark: new THREE.MeshStandardMaterial({ color: 0x09111e, roughness: 0.15, metalness: 0.95 }),
+      rotableCase: new THREE.MeshStandardMaterial({ color: 0xb4bac5, roughness: 0.25, metalness: 0.9 }),
+      cargoBox: new THREE.MeshStandardMaterial({ color: 0x8a6345, roughness: 0.85, metalness: 0.05 }),
+    };
 
-    for (let b = 0; b <= BAYS; b++) {
-      for (const dz of [-DEPTH / 2, DEPTH / 2]) {
-        const post = new THREE.Mesh(new THREE.BoxGeometry(0.13, SHELF * LEVELS + 0.4, 0.13), steel);
-        post.position.set(-W / 2 + b * BAY, (SHELF * LEVELS) / 2, dz);
+    // Building Dimensions (Small / Compact scale)
+    const W = 10.8; // Width along X
+    const H = 4.6;  // Height along Y
+    const D = 7.4;  // Depth along Z
+
+    // 1. Foundation & Interior Ground Slab
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(W + 0.6, 0.25, D + 0.6), MAT.concreteFloor);
+    slab.position.set(0, 0.125, 0);
+    g.add(slab);
+
+    // 2. Main Structural Steel Skeleton (Columns & Roof Beams)
+    const colW = 0.18;
+    const colPositions = [
+      [-W / 2, -D / 2], [0, -D / 2], [W / 2, -D / 2],
+      [-W / 2, D / 2],  [0, D / 2],  [W / 2, D / 2],
+      [-W / 2, 0],      [W / 2, 0]
+    ];
+    colPositions.forEach(([cx, cz]) => {
+      const col = new THREE.Mesh(new THREE.BoxGeometry(colW, H, colW), MAT.steelFrame);
+      col.position.set(cx, H / 2 + 0.25, cz);
+      g.add(col);
+    });
+
+    // Perimeter Top Beams
+    const beamTopN = new THREE.Mesh(new THREE.BoxGeometry(W, colW, colW), MAT.steelFrame);
+    beamTopN.position.set(0, H + 0.25, -D / 2);
+    g.add(beamTopN);
+    const beamTopS = new THREE.Mesh(new THREE.BoxGeometry(W, colW, colW), MAT.steelFrame);
+    beamTopS.position.set(0, H + 0.25, D / 2);
+    g.add(beamTopS);
+
+    // 3. Enclosed Walls (Rear & Sides with Architectural Ribbed Panels)
+    // Rear North Wall
+    const rearWall = new THREE.Mesh(new THREE.BoxGeometry(W, H, 0.12), MAT.facadeRibbed);
+    rearWall.position.set(0, H / 2 + 0.25, -D / 2);
+    g.add(rearWall);
+
+    // West Side Wall
+    const westWall = new THREE.Mesh(new THREE.BoxGeometry(0.12, H, D), MAT.facadeDark);
+    westWall.position.set(-W / 2, H / 2 + 0.25, 0);
+    g.add(westWall);
+
+    // East Side Wall (with high-level windows)
+    const eastWall = new THREE.Mesh(new THREE.BoxGeometry(0.12, H * 0.65, D), MAT.facadeDark);
+    eastWall.position.set(W / 2, (H * 0.65) / 2 + 0.25, 0);
+    g.add(eastWall);
+    const eastGlass = new THREE.Mesh(new THREE.BoxGeometry(0.08, H * 0.35, D), MAT.glassTint);
+    eastGlass.position.set(W / 2, H - (H * 0.35) / 2 + 0.25, 0);
+    g.add(eastGlass);
+
+    // 4. Front South Facade: Glazed Inspection Atrium & Loading Bays
+    // Left section: Glazed High-Bay Curtain Wall
+    const glassW = W * 0.48;
+    const frontGlass = new THREE.Mesh(new THREE.BoxGeometry(glassW, H * 0.85, 0.08), MAT.glassTint);
+    frontGlass.position.set(-W / 4, (H * 0.85) / 2 + 0.25, D / 2);
+    g.add(frontGlass);
+
+    // Glass mullions
+    for (let m = -glassW / 2; m <= glassW / 2; m += glassW / 3) {
+      const mull = new THREE.Mesh(new THREE.BoxGeometry(0.06, H * 0.85, 0.12), MAT.steelFrame);
+      mull.position.set(-W / 4 + m, (H * 0.85) / 2 + 0.25, D / 2);
+      g.add(mull);
+    }
+
+    // Right section: Two Cargo Loading Docks
+    const dockWallW = W * 0.52;
+    const dockWall = new THREE.Mesh(new THREE.BoxGeometry(dockWallW, H * 0.3, 0.12), MAT.facadeDark);
+    dockWall.position.set(W / 4, H - (H * 0.3) / 2 + 0.25, D / 2);
+    g.add(dockWall);
+
+    // Dock 01: Open Roller Door with Hydraulic Dock Leveler
+    const dock1W = dockWallW * 0.42;
+    const dockH = H * 0.65;
+    const shutter1 = new THREE.Mesh(new THREE.BoxGeometry(dock1W, dockH * 0.3, 0.08), MAT.shutterSteel);
+    shutter1.position.set(W * 0.14, H * 0.58, D / 2);
+    g.add(shutter1);
+
+    // Dock Leveler & Hazard Striping
+    const dockRamp = new THREE.Mesh(new THREE.BoxGeometry(dock1W * 0.9, 0.14, 1.2), MAT.hazardYellow);
+    dockRamp.position.set(W * 0.14, 0.25, D / 2 + 0.55);
+    g.add(dockRamp);
+
+    // Dock 02: Closed Corrugated Shutter
+    const shutter2 = new THREE.Mesh(new THREE.BoxGeometry(dock1W, dockH, 0.08), MAT.shutterSteel);
+    shutter2.position.set(W * 0.36, dockH / 2 + 0.25, D / 2);
+    g.add(shutter2);
+
+    // Cantilevered Entrance Canopy over Docks
+    const canopy = new THREE.Mesh(new THREE.BoxGeometry(dockWallW + 0.4, 0.14, 1.6), MAT.facadeDark);
+    canopy.position.set(W / 4, dockH + 0.38, D / 2 + 0.7);
+    g.add(canopy);
+
+    // 5. Roof Structure & Rooftop Plant Systems
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(W + 0.4, 0.18, D + 0.4), MAT.facadeDark);
+    roof.position.set(0, H + 0.34, 0);
+    g.add(roof);
+
+    // Perimeter Roof Parapet
+    const parapetH = 0.38;
+    const parN = new THREE.Mesh(new THREE.BoxGeometry(W + 0.4, parapetH, 0.1), MAT.steelFrame);
+    parN.position.set(0, H + 0.34 + parapetH / 2, -D / 2 - 0.15);
+    g.add(parN);
+    const parS = new THREE.Mesh(new THREE.BoxGeometry(W + 0.4, parapetH, 0.1), MAT.steelFrame);
+    parS.position.set(0, H + 0.34 + parapetH / 2, D / 2 + 0.15);
+    g.add(parS);
+
+    // Rooftop HVAC Chiller Units (2 units)
+    for (const hx of [-W * 0.28, W * 0.24]) {
+      const hvac = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.75, 1.2), MAT.hvacGalv);
+      hvac.position.set(hx, H + 0.8, -D * 0.18);
+      g.add(hvac);
+      // Fan vent circle
+      const vent = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.08, 16), MAT.steelFrame);
+      vent.position.set(hx, H + 1.2, -D * 0.18);
+      g.add(vent);
+    }
+
+    // Solar PV Panels on West Roof
+    for (let sy = -1.6; sy <= 1.6; sy += 1.1) {
+      const solar = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.06, 0.85), MAT.solarDark);
+      solar.position.set(-W * 0.26, H + 0.48, sy);
+      solar.rotation.x = -0.08;
+      g.add(solar);
+    }
+
+    // Rooftop Satellite Uplink Dish (Spec 2000 Global Supply Link)
+    const dishMast = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.9, 8), MAT.steelFrame);
+    dishMast.position.set(W * 0.38, H + 0.85, -D * 0.25);
+    g.add(dishMast);
+    const dish = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.05, 0.12, 16), MAT.trimAluminum);
+    dish.position.set(W * 0.38, H + 1.3, -D * 0.25);
+    dish.rotation.x = -Math.PI / 4;
+    dish.rotation.y = 0.6;
+    g.add(dish);
+
+    // Rooftop Safety Beacon
+    const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.16, 8), MAT.beaconAmber);
+    beacon.position.set(-W / 2 + 0.2, H + 0.6, -D / 2 + 0.2);
+    g.add(beacon);
+
+    // 6. Interior Automated Storage & Retrieval System (ASRS) & Rotable Vault
+    // Multi-tier automated shelving visible through glass
+    const rackW = 4.2, rackH = 3.6, rackD = 1.2;
+    for (let rz of [-D * 0.22, D * 0.12]) {
+      // Rack uprights
+      for (let rx of [-rackW / 2, -rackW / 6, rackW / 6, rackW / 2]) {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.08, rackH, 0.08), MAT.steelFrame);
+        post.position.set(-W * 0.24 + rx, rackH / 2 + 0.25, rz);
         g.add(post);
       }
-    }
-    for (let l = 0; l <= LEVELS; l++) {
-      const y = l * SHELF;
-      for (const dz of [-DEPTH / 2, DEPTH / 2]) {
-        const beam = new THREE.Mesh(new THREE.BoxGeometry(W + 0.13, 0.11, 0.11), steel);
-        beam.position.set(0, y, dz);
-        g.add(beam);
-      }
-      if (l < LEVELS) {
-        const deck = new THREE.Mesh(new THREE.BoxGeometry(W, 0.05, DEPTH), steel);
-        deck.position.set(0, y + 0.03, 0);
+      // Shelving decks with glowing cyan LED inventory status strips
+      for (let l = 0; l <= 3; l++) {
+        const yDeck = 0.25 + l * 1.0;
+        const deck = new THREE.Mesh(new THREE.BoxGeometry(rackW, 0.04, rackD), MAT.steelFrame);
+        deck.position.set(-W * 0.24, yDeck, rz);
         g.add(deck);
-      }
-    }
 
-    // deterministic, so the stores do not reshuffle on every reload
-    let seed = 7;
-    const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
-    for (let l = 0; l < LEVELS; l++) {
-      for (let b = 0; b < BAYS; b++) {
-        const n = 2 + Math.floor(rnd() * 3);
-        for (let i = 0; i < n; i++) {
-          const bw = 0.5 + rnd() * 0.55, bh = 0.4 + rnd() * 0.5, bd = 0.6 + rnd() * 0.7;
-          const carb = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), carton);
-          carb.position.set(
-            -W / 2 + b * BAY + 0.5 + i * (BAY - 1) / Math.max(n - 1, 1),
-            l * SHELF + bh / 2 + 0.06,
-            (rnd() - 0.5) * (DEPTH - bd - 0.2)
+        // Glowing Blue/Cyan LED inventory strip on front of shelf
+        const ledStrip = new THREE.Mesh(new THREE.BoxGeometry(rackW * 0.95, 0.025, 0.02), MAT.asrsBlue);
+        ledStrip.position.set(-W * 0.24, yDeck + 0.02, rz + rackD / 2 + 0.01);
+        g.add(ledStrip);
+
+        // Stored Rotable Parts, LRU Cases & Avionics Boxes
+        for (let bx = -1.6; bx <= 1.6; bx += 0.8) {
+          const isCase = (l + Math.abs(bx)) % 2 === 0;
+          const boxMesh = new THREE.Mesh(
+            new THREE.BoxGeometry(0.55, 0.38, 0.65),
+            isCase ? MAT.rotableCase : MAT.cargoBox
           );
-          carb.rotation.y = (rnd() - 0.5) * 0.14;
-          g.add(carb);
+          boxMesh.position.set(-W * 0.24 + bx, yDeck + 0.22, rz);
+          g.add(boxMesh);
         }
       }
     }
 
-    for (const [x, rot] of [[-2.1, 0.18], [1.4, -0.1]]) {
-      const c = new THREE.Mesh(new THREE.BoxGeometry(1.9, 1.0, 1.2), caseMat);
-      c.position.set(x, 0.5, DEPTH / 2 + 1.5);
-      c.rotation.y = rot;
-      g.add(c);
-      for (const dy of [-0.28, 0.28]) {
-        const band = new THREE.Mesh(new THREE.BoxGeometry(1.95, 0.08, 1.25), steel);
-        band.position.set(x, 0.5 + dy, DEPTH / 2 + 1.5);
-        band.rotation.y = rot;
-        g.add(band);
-      }
-    }
+    // 7. Ground Staging Area, Rotable Transit Skids & Pallets (Outside Dock 01)
+    const stagedPositions = [
+      { x: W * 0.12, z: D / 2 + 1.8, rot: 0.12, isAlu: true },
+      { x: W * 0.28, z: D / 2 + 1.6, rot: -0.15, isAlu: false },
+      { x: W * 0.42, z: D / 2 + 2.1, rot: 0.08, isAlu: true },
+    ];
+    stagedPositions.forEach((st) => {
+      // Wood pallet base
+      const pallet = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.12, 1.1), MAT.cargoBox);
+      pallet.position.set(st.x, 0.06, st.z);
+      g.add(pallet);
+
+      // Heavy transit container (ATA Spec 300 Category 1 rotable container)
+      const container = new THREE.Mesh(
+        new THREE.BoxGeometry(1.15, 0.75, 1.05),
+        st.isAlu ? MAT.rotableCase : MAT.facadeDark
+      );
+      container.position.set(st.x, 0.12 + 0.375, st.z);
+      container.rotation.y = st.rot;
+      g.add(container);
+
+      // Aluminum protective corner bands
+      const band = new THREE.Mesh(new THREE.BoxGeometry(1.18, 0.06, 1.08), MAT.trimAluminum);
+      band.position.set(st.x, 0.12 + 0.375, st.z);
+      band.rotation.y = st.rot;
+      g.add(band);
+    });
+
+    // 8. Front Illuminated Signage Plaque
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.42, 0.06), MAT.facadeDark);
+    sign.position.set(-W * 0.24, H * 0.88, D / 2 + 0.06);
+    g.add(sign);
+
+    const signBorder = new THREE.Mesh(new THREE.BoxGeometry(3.64, 0.46, 0.04), MAT.asrsBlue);
+    signBorder.position.set(-W * 0.24, H * 0.88, D / 2 + 0.05);
+    g.add(signBorder);
+
+    // Rotate 180 degrees to match aeroplane facing orientation
+    g.rotation.y = Math.PI;
+
     return g;
   }
 
@@ -809,9 +984,6 @@ function boot() {
   renderer.setAnimationLoop(() => {
     if (!visible || !w || !stage) return;
 
-    if (!reduced && !dragging && !held) drift += 0.006;
-    spin = 0.17 * Math.sin(drift);
-
     const t = reduced ? 1 : 0.055;
     cam.theta = lerp(cam.theta, goal.theta, t);
     cam.phi = lerp(cam.phi, goal.phi, t);
@@ -823,11 +995,10 @@ function boot() {
     // a narrow viewport has to stand further back or the subject runs off frame
     const fit = 1.45 / Math.min(camera.aspect, 1.45);
     const reach = Math.max(stage.half[0], stage.half[2]) * cam.dist * fit;
-    const a = cam.theta + spin;
     camera.position.set(
-      cam.tx + reach * Math.sin(cam.phi) * Math.cos(a),
+      cam.tx + reach * Math.sin(cam.phi) * Math.cos(cam.theta),
       cam.ty + reach * Math.cos(cam.phi),
-      cam.tz + reach * Math.sin(cam.phi) * Math.sin(a)
+      cam.tz + reach * Math.sin(cam.phi) * Math.sin(cam.theta)
     );
     camera.lookAt(target.set(cam.tx, cam.ty, cam.tz));
 

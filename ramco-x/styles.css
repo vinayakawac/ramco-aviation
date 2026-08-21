@@ -217,41 +217,54 @@ h2.big { font-size: clamp(2.4rem, 8vw, 6rem); }
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-top: clamp(40px, 5.5vw, 68px);
+  margin-top: clamp(44px, 6vw, 72px);
 }
 
 .prob-card {
-  background: #060709;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 26px 22px;
+  background: #050608;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   transition: border-color .3s var(--ease), transform .3s var(--ease), background .3s;
 }
 .prob-card:hover {
-  border-color: var(--line-hi);
-  background: #0a0b0f;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: #08090d;
   transform: translateY(-2px);
 }
 
+.prob-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
 .prob-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--fg-mid);
-  margin-bottom: 20px;
   transition: color .3s, border-color .3s, background .3s;
 }
 .prob-card:hover .prob-icon {
   color: #fff;
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.25);
   background: rgba(255, 255, 255, 0.08);
+}
+
+.prob-num {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--fg-dim);
 }
 
 .prob-title {
@@ -260,6 +273,7 @@ h2.big { font-size: clamp(2.4rem, 8vw, 6rem); }
   letter-spacing: -0.02em;
   color: var(--fg);
   margin-bottom: 8px;
+  line-height: 1.25;
 }
 
 .prob-desc {
@@ -275,13 +289,13 @@ h2.big { font-size: clamp(2.4rem, 8vw, 6rem); }
   .problem-grid { grid-template-columns: 1fr; }
 }
 
-/* --- operating model visualizer --- */
+/* --- operating model visualizer (x.ai style) --- */
 
 .op-model {
-  margin-top: clamp(40px, 5.5vw, 64px);
+  margin-top: clamp(48px, 6vw, 76px);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #050507;
+  border-radius: 10px;
+  background: #040507;
   overflow: hidden;
   box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 1), 0 0 0 1px rgba(255, 255, 255, .02) inset;
 }
@@ -290,15 +304,29 @@ h2.big { font-size: clamp(2.4rem, 8vw, 6rem); }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--line);
-  background: linear-gradient(#0b0b0d, #070709);
+  background: #08090c;
+}
+
+.op-tag-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-pulse {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #60a5fa;
+  box-shadow: 0 0 8px #3b82f6;
 }
 
 .op-tag {
   font-family: var(--f-mono);
   font-size: 10.5px;
-  letter-spacing: .16em;
+  letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--fg-dim);
 }
@@ -336,10 +364,23 @@ h2.big { font-size: clamp(2.4rem, 8vw, 6rem); }
 .op-stage {
   position: relative;
   width: 100%;
-  height: clamp(340px, 45vw, 440px);
-  background: radial-gradient(circle at 50% 50%, #0d0f15 0%, #040507 85%);
+  height: clamp(420px, 50vw, 520px);
+  background: radial-gradient(circle at 50% 50%, #090b12 0%, #030406 82%);
   overflow: hidden;
 }
+
+.op-corner {
+  position: absolute;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+  user-select: none;
+}
+.op-corner.tl { top: 12px; left: 16px; }
+.op-corner.tr { top: 12px; right: 16px; }
+.op-corner.bl { bottom: 12px; left: 16px; }
+.op-corner.br { bottom: 12px; right: 16px; }
 
 .op-svg {
   width: 100%;
@@ -360,24 +401,35 @@ h2.big { font-size: clamp(2.4rem, 8vw, 6rem); }
   color: var(--fg-dim);
 }
 
+.op-foot-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-foot-icon {
+  color: var(--fg-dim);
+}
+
 .op-stat-pill {
   padding: 3px 8px;
   border-radius: 3px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.35);
   color: #f87171;
   font-size: 10px;
   text-transform: uppercase;
+  letter-spacing: 0.06em;
   transition: all .3s;
 }
 .op-stat-pill.unified {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.45);
   color: #60a5fa;
 }
 
 .op-caption {
-  margin-top: 18px;
+  margin-top: 20px;
   font-size: 13px;
   color: var(--fg-mid);
   line-height: 1.6;

@@ -188,8 +188,8 @@ export const ZONES = [
       'Spec 2000 e-business for procurement and repair',
     ],
     subject: 'stores',
-    cam: { theta: -0.62, phi: 1.28, dist: 2.65, target: [0, -0.05, 0.15] },
+    cam: { theta: -2.46, phi: 1.22, dist: 2.40, target: [0, 0.20, 0] },
     anchor: { x: -0.38, y: -0.78, z: 0.06 },
-    subjectAnchor: { x: 0.0, y: 0.42, z: 0.2 },
+    subjectAnchor: { x: -0.1, y: 0.55, z: -0.2 },
   },
 ];
