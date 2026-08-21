@@ -16,6 +16,7 @@
 
   /* stagger-reveal every block-level element inside a section */
   const targets = document.querySelectorAll(
+    '.hero-badge, .xai-title, .xai-lede, .xai-cta-row, .hero-showcase > *, .xai-stats > div, ' +
     '.hero .tag, .hero h1, .hero .lede, .cta-row, .stats > div, ' +
     '.sec-head > *, .problem-grid > *, .op-model, .app, .closing > .wrap > *'
   );

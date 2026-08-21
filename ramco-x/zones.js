@@ -109,8 +109,8 @@ export const ZONES = [
     ],
     subject: 'engine',
     cam: { theta: -0.85, phi: 1.36, dist: 2.30, target: [0, 0.02, 0] },
-    anchor: { x: 0.25, y: -0.83, z: 0.29 },
-    subjectAnchor: { x: 0.05, y: 0.30, z: 0 },
+    anchor: { x: 0.0, y: 0.85, z: 0.0 },
+    subjectAnchor: { x: 0.0, y: 0.85, z: 0.0 },
   },
   {
     n: '5',
@@ -135,8 +135,8 @@ export const ZONES = [
       'Operational oversight to identify and prevent quality issues',
     ],
     subject: 'airframe',
-    cam: { theta: 2.20, phi: 1.10, dist: 2.85, target: [0, -0.10, 0] },
-    anchor: { x: -0.12, y: -0.28, z: -0.55 },
+    cam: { theta: -0.82, phi: 1.20, dist: 3.75, target: [0, 0.25, 0] },
+    anchor: { x: -0.10, y: 0.15, z: 0.0 },
   },
   {
     n: '6',
@@ -189,7 +189,7 @@ export const ZONES = [
     ],
     subject: 'stores',
     cam: { theta: -2.46, phi: 1.22, dist: 2.40, target: [0, 0.20, 0] },
-    anchor: { x: -0.38, y: -0.78, z: 0.06 },
-    subjectAnchor: { x: -0.1, y: 0.55, z: -0.2 },
+    anchor: { x: 0.0, y: 1.15, z: 0.0 },
+    subjectAnchor: { x: 0.0, y: 1.15, z: 0.0 },
   },
 ];

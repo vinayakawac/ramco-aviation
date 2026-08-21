@@ -236,7 +236,7 @@ function boot() {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const SUBJECT_LABEL = { airframe: 'Airframe', engine: 'Powerplant', stores: 'Stores' };
-  let active = 3; // Engine MRO - the zone Ramco calls its most specialised
+  let active = 4; // Hangar MRO & heavy - whole hangar panoramic on first load
 
   /* ---------- rail + readout (work with or without WebGL) ---------- */
 
@@ -355,8 +355,8 @@ function boot() {
   world.add(fade);
 
   /* Where each subject stands, in metres. The aircraft is at the origin; the
-     other two sit clear of its wingtips. */
-  const SPOTS = { airframe: [0, 0], engine: [32, -7], stores: [-32, 5] };
+     cutaway turbofan engine and supply chain hub are positioned per user layout. */
+  const SPOTS = { airframe: [0, 0], engine: [19.6, -4.4], stores: [-26.9, -0.5] };
 
   // a work light over each bay, so nothing at the edge of frame goes black
   for (const [sx, sz] of Object.values(SPOTS)) {
@@ -789,14 +789,65 @@ function boot() {
     return g;
   }
 
-  /* ---------- load ---------- */
+  /* ---------- Phase A: Procedural scene (instant, no network) ---------- */
+
+  // Engine, stores, GSE are all procedural — render them from frame 1
+  turbofanInstance = createTurbofanEngine({ scale: 0.82, cutawayAngle: Math.PI * 0.5 });
+  const turbofanGrp = turbofanInstance.group;
+  turbofanGrp.rotation.y = -1.57;
+  subjects.engine = place(turbofanGrp, 'engine', { noseSign: 1, lenAxis: 0, floatHeight: 2.0 });
+
+  const storesBuilding = buildStores();
+  storesBuilding.rotation.y = 2.67;
+  subjects.stores = place(storesBuilding, 'stores', { noseSign: 1, lenAxis: 0 });
+
+  const gpu = groundPowerUnit();
+  gpu.position.set(4.9, 0, -11);
+  gpu.rotation.y = 1.57;
+  world.add(gpu);
+
+  const train = baggageTrain();
+  train.position.set(5.4, 0, 6.4);
+  train.rotation.y = -1.57;
+  world.add(train);
+
+  paintFloor();
+
+  // Temporary airframe stub so the camera rig and render loop work immediately.
+  // Uses the airframe SPOT so camera framing for airframe zones is correct.
+  const [stubSX, stubSZ] = SPOTS.airframe;
+  const stubHalf = [20, 6, 18];   // approximate half-extents of a B738
+  stage = {
+    half: stubHalf,
+    noseSign: -1,
+    centre: new THREE.Vector3(stubSX, stubHalf[1], stubSZ),
+    axis: { len: 2, up: 1, side: 0 },
+  };
+  subjects.airframe = stage;
+
+  ready = true;
+  loadEl.classList.add('gone');
+  setTimeout(() => loadEl.remove(), 400);
+  // select() is deferred: cam/goal/pins are const/let declared below
+  // and need to exist before select() runs
+  const deferredSelect = () => select(active, true);
+
+  /* ---------- Phase B: GLB airframe (background, fade-in) ---------- */
 
   const draco = new DRACOLoader().setDecoderPath('./vendor/draco/');
   const loader = new GLTFLoader().setDRACOLoader(draco);
 
+  let airframeFadeProgress = 0;
+
   loader.load('./assets/models/b738.glb', (gltf) => {
     const model = gltf.scene;
-    model.traverse((o) => { if (o.isMesh) o.material = skin; });
+    model.traverse((o) => {
+      if (o.isMesh) {
+        o.material = skin.clone();
+        o.material.transparent = true;
+        o.material.opacity = 0;
+      }
+    });
 
     // whichever end carries the fin is the tail
     const mb = new THREE.Box3();
@@ -808,48 +859,41 @@ function boot() {
     });
     const noseSign = finZ > 0 ? -1 : 1;
 
-    subjects.airframe = place(model, 'airframe', { noseSign });
+    const realAirframe = place(model, 'airframe', { noseSign });
+    subjects.airframe = realAirframe;
+    stage = realAirframe;
 
-    // High-fidelity cutaway turbofan engine with dual-spool rotation (floating)
-    turbofanInstance = createTurbofanEngine({ scale: 0.82, cutawayAngle: Math.PI * 0.5 });
-    const turbofanGrp = turbofanInstance.group;
-    subjects.engine = place(turbofanGrp, 'engine', { noseSign: 1, lenAxis: 0, floatHeight: 1.4 });
-
-    subjects.stores = place(buildStores(), 'stores', { noseSign: 1, lenAxis: 0 });
-
-    // the kit belongs to the aircraft's bay, so it is positioned in the
-    // airframe's own frame rather than in raw world coordinates
-    stage = subjects.airframe;
+    // power cable needs airframe frame
     const at = (x, y, z) => acToWorld({ x, y, z }, new THREE.Vector3());
-
-    const gpu = groundPowerUnit();
-    const gpuAt = at(0.62, -1.0, 0.30);
-    gpu.position.set(gpuAt.x, 0, gpuAt.z);
-    gpu.rotation.y = Math.PI / 2;
-    world.add(gpu);
-
-    const nose = at(0.55, -0.86, 0.02);          // receptacle, forward belly
+    const nose = at(0.55, -0.86, 0.02);
     world.add(powerCable(
-      new THREE.Vector3(gpuAt.x - 0.6, 1.7, gpuAt.z),
+      new THREE.Vector3(4.4, 1.7, -11),
       new THREE.Vector3(nose.x, nose.y, nose.z)
     ));
 
-    const train = baggageTrain();
-    const trainAt = at(0.16, -1.0, 0.42);
-    train.position.set(trainAt.x, 0, trainAt.z);
-    train.rotation.y = Math.PI / 2;
-    world.add(train);
+    // Start fade-in
+    airframeFadeProgress = 0.001;
 
-    paintFloor();
-
-    ready = true;
-    loadEl.classList.add('gone');
-    setTimeout(() => loadEl.remove(), 600);
-    select(active, true);
+    // re-select current zone so camera framing uses real airframe dimensions
+    select(active, false);
   }, undefined, () => {
     viewport.classList.add('no-gl');
-    loadEl.remove();
   });
+
+  // Fade-in updater — called from render loop
+  function updateAirframeFade() {
+    if (airframeFadeProgress <= 0 || airframeFadeProgress >= 1) return;
+    airframeFadeProgress = Math.min(1, airframeFadeProgress + 0.04); // ~25 frames = ~400ms
+    const model = subjects.airframe;
+    if (!model || !model.half) return; // still stub
+    // walk the scene to find meshes with transparent skin
+    world.traverse((o) => {
+      if (o.isMesh && o.material && o.material.transparent && o.material.map === skin.map) {
+        o.material.opacity = airframeFadeProgress;
+        if (airframeFadeProgress >= 1) o.material.transparent = false;
+      }
+    });
+  }
 
   /* ---------- camera rig ---------- */
 
@@ -879,42 +923,47 @@ function boot() {
   }
 
   /* ---------- zone callouts ----------
-     Labels are the seven zone titles, never aircraft part names. On the
-     airframe all seven sit where that zone lives, so the aircraft reads as a
-     map of the platform; on the engine and stores stages only the zone that
-     owns the subject is labelled. */
+     Labels are the seven zone numbers, displayed as clean circular badges
+     without leader lines. Each pin is mapped in world space to its respective
+     subject: airframe, cutaway turbofan engine, or supply chain building. */
 
   let pins = [];
 
+  function pinToWorld(z, out) {
+    const s = subjects[z.subject] || subjects.airframe;
+    if (!s) return out.set(0, 0, 0);
+    const anchor = (z.subjectAnchor || z.anchor);
+    const v = [0, 0, 0];
+    v[s.axis.len] = anchor.x * s.half[s.axis.len] * s.noseSign;
+    v[s.axis.up] = anchor.y * s.half[s.axis.up];
+    v[s.axis.side] = anchor.z * s.half[s.axis.side];
+    return out.set(v[0] + s.centre.x, v[1] + s.centre.y, v[2] + s.centre.z);
+  }
+
   function buildPins(zone) {
     pinsEl.innerHTML = '';
-    const onAirframe = zone.subject === 'airframe';
-    const shown = onAirframe ? ZONES : [zone];
+    const shown = ZONES;
 
     pins = shown.map((z, n) => {
-      const at = onAirframe ? z.anchor : (z.subjectAnchor || z.anchor);
       const el = document.createElement('span');
       el.className = 'pin' + (z === zone ? ' live' : '');
       el.style.transitionDelay = `${140 + n * 70}ms`;
-      el.innerHTML = `<i></i><button type="button" tabindex="-1">${z.n}</button><em>${z.title}</em>`;
-      // seven titles at once collide at most camera angles, so an inactive
-      // marker names itself on hover and jumps to its zone on click
+      el.innerHTML = `<button type="button" tabindex="-1" aria-label="Zone ${z.n}: ${z.title}">${z.n}</button>`;
+      // Inactive marker jumps to its zone on click
       if (z !== zone) el.querySelector('button').addEventListener('click', () => select(ZONES.indexOf(z)));
       pinsEl.appendChild(el);
-      return { el, at, vec: new THREE.Vector3() };
+      return { el, zone: z, vec: new THREE.Vector3() };
     });
     requestAnimationFrame(() => pins.forEach((p) => p.el.classList.add('on')));
   }
 
   function placePins(w, h) {
     for (const p of pins) {
-      const v = acToWorld(p.at, p.vec);
+      const v = pinToWorld(p.zone, p.vec);
       v.project(camera);
       const inside = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05;
       const sx = (v.x * 0.5 + 0.5) * w;
       p.el.style.opacity = inside ? '' : '0';
-      // flip the label to the left of the dot when it would run off the edge
-      p.el.classList.toggle('flip', sx > w - 190);
       p.el.style.transform = `translate(${sx}px, ${(-v.y * 0.5 + 0.5) * h}px)`;
     }
   }
@@ -1003,14 +1052,15 @@ function boot() {
     camera.lookAt(target.set(cam.tx, cam.ty, cam.tz));
 
     renderer.render(scene, camera);
+    updateAirframeFade();
     if (turbofanInstance) {
       turbofanInstance.update(0.016, 0.7);
     }
     if (ready) placePins(w, h);
   });
 
-  paint(active);
-  buildPins(ZONES[active]);
+  // All const/let declarations done — now run the deferred initial select
+  deferredSelect();
 }
 
 if (root) boot();

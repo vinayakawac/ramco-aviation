@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ramco Aviation — Model Positioner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --ink: #f2f2f2;
+    --muted: #a0a0a0;
+    --dim: #6a6a6a;
+    --line: rgba(255, 255, 255, 0.12);
+    --surface: #060709;
+    --panel: rgba(8, 10, 14, 0.88);
+    --active: #ffffff;
+    --accent: #3b82f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-width: 320px;
+    overflow: hidden;
+    background: #000000;
+    color: var(--ink);
+    font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input { font: inherit; }
+  button { color: inherit; cursor: pointer; }
+  #stage { position: fixed; inset: 0; touch-action: none; }
+  #stage canvas { display: block; width: 100%; height: 100%; }
+
+  /* Top Bar */
+  .topbar {
+    position: fixed; z-index: 10; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(14px);
+  }
+  .brand {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; font-weight: 500;
+  }
+  .brand em { font-style: normal; color: var(--dim); margin-left: 0.3em; }
+  .hint {
+    margin: 0; color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em;
+  }
+
+  /* Control Panel */
+  .control-panel {
+    position: fixed; z-index: 10; top: 68px; right: 24px;
+    width: min(340px, calc(100vw - 48px));
+    padding: 20px;
+    border: 1px solid var(--line); border-radius: 10px;
+    background: var(--panel);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(16px);
+  }
+  .eyebrow {
+    color: var(--dim); font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  h1 {
+    margin: 4px 0 14px; font-size: 20px; font-weight: 500; letter-spacing: -0.03em;
+  }
+  .model-tabs {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px;
+  }
+  .model-tabs.sub-row {
+    grid-template-columns: repeat(2, 1fr); margin-bottom: 16px;
+  }
+  .model-tab {
+    padding: 7px 6px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
+    background: #101217; color: var(--muted); font-size: 11.5px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .model-tab:hover { background: #161a22; color: #fff; }
+  .model-tab[aria-pressed="true"] {
+    border-color: rgba(59, 130, 246, 0.8); background: #111d2e; color: #60a5fa; font-weight: 500;
+  }
+
+  .field-group { display: grid; gap: 8px; margin-top: 14px; }
+  .field-group + .field-group { padding-top: 14px; border-top: 1px solid var(--line); }
+  .readout-label {
+    color: var(--dim); font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .field-row {
+    display: grid; grid-template-columns: 16px 1fr 62px; align-items: center; gap: 8px;
+  }
+  .axis {
+    color: var(--dim); font: 10px 'JetBrains Mono', monospace; text-align: center;
+  }
+  input[type="range"] {
+    width: 100%; accent-color: var(--accent); cursor: pointer;
+  }
+  input[type="number"] {
+    width: 62px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px;
+    background: #040507; color: var(--ink); font: 11px 'JetBrains Mono', monospace;
+  }
+
+  .actions { display: flex; gap: 8px; margin-top: 16px; }
+  .action {
+    flex: 1; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+    background: #101217; font-size: 11.5px; font-family: 'JetBrains Mono', monospace;
+    color: var(--muted); transition: all 0.2s;
+  }
+  .action:hover { border-color: rgba(255, 255, 255, 0.3); color: #fff; }
+  .action.primary { border-color: rgba(59, 130, 246, 0.6); color: #60a5fa; }
+  .action.primary:hover { background: #111d2e; border-color: #3b82f6; }
+
+  .status {
+    min-height: 15px; margin-top: 12px; color: var(--dim);
+    font: 10px 'JetBrains Mono', monospace; letter-spacing: 0.04em;
+  }
+
+  /* Bottom Left Readout */
+  .readout {
+    position: fixed; z-index: 10; left: 24px; bottom: 24px;
+    display: grid; gap: 4px; padding: 12px 16px;
+    border-left: 2px solid #3b82f6;
+    background: rgba(4, 5, 8, 0.85); backdrop-filter: blur(12px);
+    border-radius: 0 6px 6px 0;
+  }
+  .readout strong { font-size: 14px; font-weight: 500; }
+
+  @media (max-width: 768px) {
+    .hint { display: none; }
+    .control-panel { top: auto; right: 12px; bottom: 12px; width: calc(100vw - 24px); }
+    .readout { display: none; }
+  }
+</style>
+</head>
+<body>
+<main id="stage" aria-label="Interactive Ramco aviation model positioner"></main>
+
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M2 13.4 22 4l-6.2 9.1L22 20 2 13.4Z" fill="currentColor"/></svg>
+    <span>RAMCO <em>MODEL POSITIONER</em></span>
+  </div>
+  <p class="hint">Left Drag: Orbit · Right Drag: Pan · Scroll: Zoom</p>
+</header>
+
+<aside class="control-panel" aria-label="Selected model controls">
+  <div class="eyebrow">Scene Entity</div>
+  <h1 id="selectedName">Airframe</h1>
+  
+  <div class="model-tabs" role="group" aria-label="Select primary model">
+    <button class="model-tab" type="button" data-model="airframe" aria-pressed="true">Airframe</button>
+    <button class="model-tab" type="button" data-model="engine" aria-pressed="false">Engine</button>
+    <button class="model-tab" type="button" data-model="stores" aria-pressed="false">Stores Hub</button>
+  </div>
+  <div class="model-tabs sub-row" role="group" aria-label="Select secondary model">
+    <button class="model-tab" type="button" data-model="gpu" aria-pressed="false">GPU Unit</button>
+    <button class="model-tab" type="button" data-model="train" aria-pressed="false">Baggage Train</button>
+  </div>
+
+  <div class="field-group" aria-label="Position in metres">
+    <div class="readout-label">Position / metres</div>
+    <label class="field-row"><span class="axis">X</span><input type="range" data-transform="position" data-axis="x" min="-45" max="45" step=".1"><input type="number" data-transform="position" data-axis="x" step=".1"></label>
+    <label class="field-row"><span class="axis">Y</span><input type="range" data-transform="position" data-axis="y" min="-5" max="25" step=".1"><input type="number" data-transform="position" data-axis="y" step=".1"></label>
+    <label class="field-row"><span class="axis">Z</span><input type="range" data-transform="position" data-axis="z" min="-45" max="45" step=".1"><input type="number" data-transform="position" data-axis="z" step=".1"></label>
+  </div>
+
+  <div class="field-group" aria-label="Rotation in degrees">
+    <div class="readout-label">Angle / degrees</div>
+    <label class="field-row"><span class="axis">X</span><input type="range" data-transform="rotation" data-axis="x" min="-180" max="180" step="1"><input type="number" data-transform="rotation" data-axis="x" step="1"></label>
+    <label class="field-row"><span class="axis">Y</span><input type="range" data-transform="rotation" data-axis="y" min="-180" max="180" step="1"><input type="number" data-transform="rotation" data-axis="y" step="1"></label>
+    <label class="field-row"><span class="axis">Z</span><input type="range" data-transform="rotation" data-axis="z" min="-180" max="180" step="1"><input type="number" data-transform="rotation" data-axis="z" step="1"></label>
+  </div>
+
+  <div class="actions">
+    <button class="action" id="reset" type="button">Reset</button>
+    <button class="action" id="frame" type="button">Frame</button>
+    <button class="action primary" id="export" type="button">Export JSON</button>
+  </div>
+  <div class="status" id="status" aria-live="polite">Loading airframe…</div>
+</aside>
+
+<div class="readout">
+  <span class="readout-label">Platform Hangar Scene</span>
+  <strong>Real-Time Model Coordinates</strong>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.min.js",
+    "three/addons/": "./vendor/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { Reflector } from 'three/addons/objects/Reflector.js';
+import { createTurbofanEngine } from './engine_model.js';
+
+const stage = document.getElementById('stage');
+const status = document.getElementById('status');
+const nameEl = document.getElementById('selectedName');
+const inputs = [...document.querySelectorAll('[data-transform]')];
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+scene.fog = new THREE.Fog(0x000000, 70, 220);
+
+const camera = new THREE.PerspectiveCamera(34, innerWidth / innerHeight, 0.5, 600);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.25;
+stage.appendChild(renderer.domElement);
+
+/* Studio Lighting */
+scene.add(new THREE.HemisphereLight(0xcdd6e6, 0x0b0b0d, 1.0));
+const key = new THREE.DirectionalLight(0xffffff, 2.8); key.position.set(40, 60, 45); scene.add(key);
+const fill = new THREE.DirectionalLight(0xdfe6f5, 2.4); fill.position.set(-50, 30, -55); scene.add(fill);
+
+/* Polished Dark Reflector Floor */
+const FLOOR = 240;
+const floor = new Reflector(new THREE.PlaneGeometry(FLOOR, FLOOR), {
+  textureWidth: 1024, textureHeight: 1024, color: 0x4c525c,
+});
+floor.rotation.x = -Math.PI / 2;
+scene.add(floor);
+
+/* Floor Grid Marking */
+const grid = new THREE.GridHelper(FLOOR, 24, 0x3b82f6, 0x1f2937);
+grid.position.y = 0.02;
+grid.material.opacity = 0.28;
+grid.material.transparent = true;
+scene.add(grid);
+
+/* ------------------------------------------------------------
+   Procedural materials & models matching explorer.js
+   ------------------------------------------------------------ */
+
+function panelCanvas(size = 1024) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  g.fillStyle = '#d8d9dc';
+  g.fillRect(0, 0, size, size);
+  for (let i = 0; i < 24; i++) {
+    const r = size * (0.08 + Math.random() * 0.22);
+    const grd = g.createRadialGradient(
+      Math.random() * size, Math.random() * size, 0,
+      Math.random() * size, Math.random() * size, r
+    );
+    const v = Math.random() > 0.5 ? 255 : 186;
+    grd.addColorStop(0, `rgba(${v},${v},${v + 4},0.10)`);
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, size, size);
+  }
+  g.lineWidth = 1.5;
+  g.strokeStyle = 'rgba(96,99,105,0.55)';
+  let x = 0;
+  while (x < size) {
+    x += size * (0.055 + Math.random() * 0.075);
+    g.beginPath(); g.moveTo(x, 0); g.lineTo(x, size); g.stroke();
+  }
+  let y = 0;
+  while (y < size) {
+    y += size * (0.06 + Math.random() * 0.09);
+    g.beginPath(); g.moveTo(0, y); g.lineTo(size, y); g.stroke();
+  }
+  return c;
+}
+
+const mapPanel = new THREE.CanvasTexture(panelCanvas());
+mapPanel.wrapS = mapPanel.wrapT = THREE.RepeatWrapping;
+mapPanel.repeat.set(3, 3);
+mapPanel.colorSpace = THREE.SRGBColorSpace;
+
+const skinMat = new THREE.MeshStandardMaterial({
+  color: 0xc9ccd4, map: mapPanel, roughness: 0.34, metalness: 0.72,
+});
+
+/* Stores Building */
+function buildStores() {
+  const g = new THREE.Group();
+  const MAT = {
+    facadeDark: new THREE.MeshStandardMaterial({ color: 0x14161b, roughness: 0.35, metalness: 0.85 }),
+    facadeRibbed: new THREE.MeshStandardMaterial({ color: 0x222630, roughness: 0.42, metalness: 0.8 }),
+    steelFrame: new THREE.MeshStandardMaterial({ color: 0x0c0e12, roughness: 0.55, metalness: 0.92 }),
+    trimAluminum: new THREE.MeshStandardMaterial({ color: 0xc8cdd8, roughness: 0.22, metalness: 0.95 }),
+    glassTint: new THREE.MeshStandardMaterial({ color: 0x162232, roughness: 0.12, metalness: 0.92, transparent: true, opacity: 0.72 }),
+    concreteFloor: new THREE.MeshStandardMaterial({ color: 0x1f2228, roughness: 0.5, metalness: 0.2 }),
+    shutterSteel: new THREE.MeshStandardMaterial({ color: 0x4a505b, roughness: 0.45, metalness: 0.85 }),
+    hazardYellow: new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.4, metalness: 0.3 }),
+    asrsBlue: new THREE.MeshStandardMaterial({ color: 0x0284c7, emissive: 0x0284c7, emissiveIntensity: 2.2 }),
+    beaconAmber: new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 2.0 }),
+    hvacGalv: new THREE.MeshStandardMaterial({ color: 0x78808d, roughness: 0.4, metalness: 0.85 }),
+    solarDark: new THREE.MeshStandardMaterial({ color: 0x09111e, roughness: 0.15, metalness: 0.95 }),
+    rotableCase: new THREE.MeshStandardMaterial({ color: 0xb4bac5, roughness: 0.25, metalness: 0.9 }),
+  };
+
+  const W = 10.8, H = 4.6, D = 7.4;
+  const slab = new THREE.Mesh(new THREE.BoxGeometry(W + 0.6, 0.25, D + 0.6), MAT.concreteFloor);
+  slab.position.set(0, 0.125, 0);
+  g.add(slab);
+
+  const rearWall = new THREE.Mesh(new THREE.BoxGeometry(W, H, 0.12), MAT.facadeRibbed);
+  rearWall.position.set(0, H / 2 + 0.25, -D / 2);
+  g.add(rearWall);
+
+  const westWall = new THREE.Mesh(new THREE.BoxGeometry(0.12, H, D), MAT.facadeDark);
+  westWall.position.set(-W / 2, H / 2 + 0.25, 0);
+  g.add(westWall);
+
+  const eastWall = new THREE.Mesh(new THREE.BoxGeometry(0.12, H * 0.65, D), MAT.facadeDark);
+  eastWall.position.set(W / 2, (H * 0.65) / 2 + 0.25, 0);
+  g.add(eastWall);
+
+  const frontGlass = new THREE.Mesh(new THREE.BoxGeometry(W * 0.48, H * 0.85, 0.08), MAT.glassTint);
+  frontGlass.position.set(-W / 4, (H * 0.85) / 2 + 0.25, D / 2);
+  g.add(frontGlass);
+
+  const dock1W = (W * 0.52) * 0.42, dockH = H * 0.65;
+  const shutter1 = new THREE.Mesh(new THREE.BoxGeometry(dock1W, dockH * 0.3, 0.08), MAT.shutterSteel);
+  shutter1.position.set(W * 0.14, H * 0.58, D / 2);
+  g.add(shutter1);
+
+  const dockRamp = new THREE.Mesh(new THREE.BoxGeometry(dock1W * 0.9, 0.14, 1.2), MAT.hazardYellow);
+  dockRamp.position.set(W * 0.14, 0.25, D / 2 + 0.55);
+  g.add(dockRamp);
+
+  const shutter2 = new THREE.Mesh(new THREE.BoxGeometry(dock1W, dockH, 0.08), MAT.shutterSteel);
+  shutter2.position.set(W * 0.36, dockH / 2 + 0.25, D / 2);
+  g.add(shutter2);
+
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(W + 0.4, 0.18, D + 0.4), MAT.facadeDark);
+  roof.position.set(0, H + 0.34, 0);
+  g.add(roof);
+
+  const dishMast = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.9, 8), MAT.steelFrame);
+  dishMast.position.set(W * 0.38, H + 0.85, -D * 0.25);
+  g.add(dishMast);
+  const dish = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.05, 0.12, 16), MAT.trimAluminum);
+  dish.position.set(W * 0.38, H + 1.3, -D * 0.25);
+  dish.rotation.x = -Math.PI / 4; dish.rotation.y = 0.6;
+  g.add(dish);
+
+  return g;
+}
+
+/* GSE Equipment */
+const GSE = {
+  shell: new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness: 0.46, metalness: 0.55 }),
+  dark: new THREE.MeshStandardMaterial({ color: 0x3a3e45, roughness: 0.62, metalness: 0.55 }),
+  rubber: new THREE.MeshStandardMaterial({ color: 0x141519, roughness: 0.92, metalness: 0.0 }),
+  lamp: new THREE.MeshStandardMaterial({ color: 0xfff0d6, emissive: 0xffe7bd, emissiveIntensity: 1.1, roughness: 0.3 }),
+};
+const mbox = (w, h, d, mat, x, y, z, ry = 0) => {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z); m.rotation.y = ry; return m;
+};
+function mwheels(g, halfTrack, axles, r, width) {
+  const geo = new THREE.CylinderGeometry(r, r, width, 18);
+  for (const z of axles) {
+    for (const s of [-1, 1]) {
+      const w = new THREE.Mesh(geo, GSE.rubber);
+      w.rotation.z = Math.PI / 2; w.position.set(s * halfTrack, r, z); g.add(w);
+    }
+  }
+}
+function makeGPU() {
+  const g = new THREE.Group();
+  g.add(mbox(1.5, 0.18, 3.0, GSE.dark, 0, 0.46, 0));
+  g.add(mbox(1.36, 1.15, 2.5, GSE.shell, 0, 1.12, -0.05));
+  mwheels(g, 0.72, [-0.85, 0.85], 0.36, 0.24);
+  g.add(mbox(0.11, 3.1, 0.11, GSE.dark, -0.5, 3.25, -0.9));
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 14), GSE.lamp);
+  head.position.set(-0.5, 4.9, -0.9); g.add(head);
+  return g;
+}
+function makeBaggageTrain() {
+  const g = new THREE.Group();
+  const tug = new THREE.Group();
+  tug.add(mbox(1.5, 0.7, 2.5, GSE.shell, 0, 0.75, 0));
+  tug.add(mbox(1.3, 0.75, 1.15, GSE.dark, 0, 1.48, -0.35));
+  mwheels(tug, 0.68, [-0.8, 0.8], 0.32, 0.22);
+  g.add(tug);
+  const cart = new THREE.Group();
+  cart.add(mbox(1.6, 0.22, 2.6, GSE.dark, 0, 0.62, 0));
+  mwheels(cart, 0.74, [-0.95, 0.95], 0.28, 0.2);
+  cart.position.z = 3.1;
+  g.add(cart);
+  return g;
+}
+
+/* ------------------------------------------------------------
+   Scene Entity Registry & Transform Controls
+   ------------------------------------------------------------ */
+
+const models = {};
+const defaults = {};
+let selected = 'airframe';
+let engineInstance = null;
+
+const clamp = (val, min, max) => Math.min(max, Math.max(min, val));
+
+function registerModel(key, group, transform) {
+  group.position.set(...transform.position);
+  group.rotation.set(...transform.rotation);
+  scene.add(group);
+  models[key] = group;
+  defaults[key] = { position: [...transform.position], rotation: [...transform.rotation] };
+}
+
+function syncInputs() {
+  const model = models[selected];
+  if (!model) return;
+  const labels = {
+    airframe: 'Airframe (B738)',
+    engine: 'Cutaway Turbofan Engine',
+    stores: 'Supply Chain Hub',
+    gpu: 'Ground Power Unit (GPU)',
+    train: 'Baggage Tug & Train',
+  };
+  nameEl.textContent = labels[selected] || selected;
+  inputs.forEach(input => {
+    const isRot = input.dataset.transform === 'rotation';
+    const val = isRot ? THREE.MathUtils.radToDeg(model.rotation[input.dataset.axis]) : model.position[input.dataset.axis];
+    input.value = Number(val.toFixed(isRot ? 0 : 1));
+  });
+  document.querySelectorAll('.model-tab').forEach(tab => {
+    tab.setAttribute('aria-pressed', String(tab.dataset.model === selected));
+  });
+}
+
+function updateInput(input) {
+  const model = models[selected];
+  if (!model) return;
+  const val = Number(input.value);
+  if (!Number.isFinite(val)) return;
+  if (input.dataset.transform === 'rotation') {
+    model.rotation[input.dataset.axis] = THREE.MathUtils.degToRad(clamp(val, -180, 180));
+  } else {
+    model.position[input.dataset.axis] = clamp(val, Number(input.min || -Infinity), Number(input.max || Infinity));
+  }
+  syncInputs();
+}
+
+inputs.forEach(input => input.addEventListener('input', () => updateInput(input)));
+document.querySelectorAll('.model-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    selected = tab.dataset.model;
+    syncInputs();
+  });
+});
+
+document.getElementById('reset').addEventListener('click', () => {
+  const model = models[selected], def = defaults[selected];
+  if (!model || !def) return;
+  model.position.set(...def.position);
+  model.rotation.set(...def.rotation);
+  syncInputs();
+  status.textContent = `${nameEl.textContent} reset to default`;
+});
+
+document.getElementById('frame').addEventListener('click', () => {
+  const model = models[selected];
+  if (!model) return;
+  const box = new THREE.Box3().setFromObject(model);
+  target.copy(box.getCenter(new THREE.Vector3()));
+  distance = Math.max(14, box.getSize(new THREE.Vector3()).length() * 1.5);
+  status.textContent = `Framed ${nameEl.textContent.toLowerCase()}`;
+});
+
+document.getElementById('export').addEventListener('click', () => {
+  const exportData = {};
+  Object.keys(models).forEach(k => {
+    const m = models[k];
+    exportData[k] = {
+      position: [Number(m.position.x.toFixed(2)), Number(m.position.y.toFixed(2)), Number(m.position.z.toFixed(2))],
+      rotation: [Number(m.rotation.x.toFixed(2)), Number(m.rotation.y.toFixed(2)), Number(m.rotation.z.toFixed(2))]
+    };
+  });
+  navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
+  status.textContent = 'Copied coordinates JSON to clipboard!';
+});
+
+/* Camera Interaction */
+const target = new THREE.Vector3(0, 2, 0);
+let azimuth = -0.82, polar = 1.20, distance = 68, dragging = false, panning = false, lastX = 0, lastY = 0;
+
+renderer.domElement.addEventListener('pointerdown', e => {
+  if (e.button === 2) panning = true; else dragging = true;
+  lastX = e.clientX; lastY = e.clientY;
+  renderer.domElement.setPointerCapture(e.pointerId);
+});
+
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!dragging && !panning) return;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  if (dragging) {
+    azimuth -= dx * 0.006;
+    polar = clamp(polar - dy * 0.005, 0.25, 1.48);
+  } else if (panning) {
+    const right = new THREE.Vector3().crossVectors(camera.up, camera.getWorldDirection(new THREE.Vector3())).normalize();
+    target.addScaledVector(right, dx * 0.05);
+    target.y += dy * 0.05;
+  }
+  lastX = e.clientX; lastY = e.clientY;
+});
+
+renderer.domElement.addEventListener('pointerup', () => { dragging = false; panning = false; });
+renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+renderer.domElement.addEventListener('wheel', e => {
+  distance = clamp(distance + e.deltaY * 0.045, 8, 160);
+  e.preventDefault();
+}, { passive: false });
+
+function resize() {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+}
+window.addEventListener('resize', resize);
+resize();
+
+function render() {
+  requestAnimationFrame(render);
+  camera.position.set(
+    target.x + distance * Math.sin(polar) * Math.cos(azimuth),
+    target.y + distance * Math.cos(polar),
+    target.z + distance * Math.sin(polar) * Math.sin(azimuth)
+  );
+  camera.lookAt(target);
+  if (engineInstance) engineInstance.update(0.016, 0.4);
+  renderer.render(scene, camera);
+}
+render();
+
+/* ------------------------------------------------------------
+   Load All Models & Set Placement matching explorer.js
+   ------------------------------------------------------------ */
+
+const draco = new DRACOLoader().setDecoderPath('./vendor/draco/');
+const loader = new GLTFLoader().setDRACOLoader(draco);
+
+loader.load('./assets/models/b738.glb', gltf => {
+  const airframe = new THREE.Group();
+  airframe.add(gltf.scene);
+  airframe.traverse(node => {
+    if (node.isMesh) node.material = skinMat;
+  });
+  const box = new THREE.Box3().setFromObject(airframe);
+  const size = box.getSize(new THREE.Vector3());
+  const centre = box.getCenter(new THREE.Vector3());
+  const scale = 38 / Math.max(size.x, size.z);
+  airframe.scale.setScalar(scale);
+  airframe.position.set(-centre.x * scale, -box.min.y * scale, -centre.z * scale);
+  const holder = new THREE.Group(); holder.add(airframe);
+  registerModel('airframe', holder, { position: [0, 0, 0], rotation: [0, 0, 0] });
+  status.textContent = 'Airframe loaded · ready';
+  syncInputs();
+}, undefined, () => {
+  status.textContent = 'Airframe could not load.';
+});
+
+/* Cutaway Turbofan Engine */
+engineInstance = createTurbofanEngine({ scale: 0.82, cutawayAngle: Math.PI * 0.5 });
+registerModel('engine', engineInstance.group, { position: [19.6, 2, -4.4], rotation: [0, -1.57, 0] });
+
+/* Modern Supply Chain Logistics Facility */
+const storesHub = buildStores();
+registerModel('stores', storesHub, { position: [-26.9, 0, -0.5], rotation: [0, 2.67, 0] });
+
+/* Ground Equipment */
+const gpu = makeGPU();
+registerModel('gpu', gpu, { position: [4.9, 0, -11], rotation: [0, 1.57, 0] });
+
+const baggage = makeBaggageTrain();
+registerModel('train', baggage, { position: [5.4, 0, 6.4], rotation: [0, -1.57, 0] });
+
+syncInputs();
+</script>
+</body>
+</html>
