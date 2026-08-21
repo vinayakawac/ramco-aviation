@@ -1434,25 +1434,12 @@ h2.big { font-size: clamp(2.4rem, 8vw, 6rem); }
 .foot-links { display: flex; gap: 22px; }
 .foot-links a:hover { color: var(--fg); }
 
-/* ---------- reveal ---------- */
-
-[data-reveal] {
-  opacity: 0; transform: translateY(22px);
-  transition: opacity .9s var(--ease), transform .9s var(--ease);
-  transition-delay: var(--d, 0ms);
-}
-[data-reveal].in { opacity: 1; transform: none; }
-
-/* the one authored moment on the page: the headline resolves into focus */
-.xai-title[data-reveal] {
-  transform: translateY(26px);
-  filter: blur(12px);
-  transition: opacity 1.1s var(--ease), transform 1.1s var(--ease), filter 1.1s var(--ease);
-}
-.xai-title[data-reveal].in { filter: blur(0); }
+/* ---------- motion ----------
+   Scroll choreography is owned by GSAP ScrollTrigger in main.js, which sets
+   the from-state itself. Nothing is hidden in CSS, so the page stays readable
+   if the script never runs. */
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
-  [data-reveal] { opacity: 1; transform: none; }
 }
