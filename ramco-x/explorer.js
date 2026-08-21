@@ -647,17 +647,14 @@ function boot() {
 
   /* ---------- ground support equipment ----------
      A line turn is the zone where the aircraft is surrounded by kit, so zone 2
-     gets the kit: a towable ground power unit with its light mast and cable to
-     the aircraft, plus a baggage tug and cart. Built in metres, standing on the
+     gets the kit: a towable ground power unit with its cable to the aircraft,
+     plus a baggage tug and cart. Built in metres, standing on the
      same floor as everything else. */
 
   const GSE = {
     shell: new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness: 0.46, metalness: 0.55 }),
     dark: new THREE.MeshStandardMaterial({ color: 0x3a3e45, roughness: 0.62, metalness: 0.55 }),
     rubber: new THREE.MeshStandardMaterial({ color: 0x141519, roughness: 0.92, metalness: 0.0 }),
-    lamp: new THREE.MeshStandardMaterial({
-      color: 0xfff0d6, emissive: 0xffe7bd, emissiveIntensity: 1.1, roughness: 0.3,
-    }),
   };
 
   const box = (w, h, d, mat, x, y, z, ry = 0) => {
@@ -684,7 +681,7 @@ function boot() {
     }
   }
 
-  /** Towable ground power unit, mast up. Roughly a 90 kVA diesel set. */
+  /** Towable ground power unit. Roughly a 90 kVA diesel set. */
   function groundPowerUnit() {
     const g = new THREE.Group();
 
@@ -706,17 +703,6 @@ function boot() {
     g.add(eye);
 
     wheels(g, 0.72, [-0.85, 0.85], 0.36, 0.24);
-
-    // light mast: the pole and lamp head from the sketch
-    g.add(box(0.11, 3.1, 0.11, GSE.dark, -0.5, 3.25, -0.9));
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 14), GSE.lamp);
-    head.position.set(-0.5, 4.9, -0.9);
-    g.add(head);
-    g.add(box(0.42, 0.1, 0.42, GSE.dark, -0.5, 5.16, -0.9));     // cowl over the lamp
-
-    const glow = new THREE.PointLight(0xffe7bd, 90, 22, 2);
-    glow.position.set(-0.5, 4.7, -0.9);
-    g.add(glow);
 
     return g;
   }
@@ -773,7 +759,7 @@ function boot() {
   world.add(gpu);
 
   const train = baggageTrain();
-  train.position.set(5.4, 0, 6.4);
+  train.position.set(8.2, 0, 7.9);
   train.rotation.y = -1.57;
   world.add(train);
 

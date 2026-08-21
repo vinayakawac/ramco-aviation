@@ -9,7 +9,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=3">
+<link rel="stylesheet" href="styles.css?v=10">
+<link rel="preload" as="image" href="assets/img/fleet.webp" fetchpriority="high" media="(min-width: 761px)">
+<link rel="preload" as="image" href="assets/img/fleet-sm.webp" fetchpriority="high" media="(max-width: 760px)">
 </head>
 <body>
 
@@ -33,37 +35,74 @@
 
   <!-- 01 - HERO (x.ai style) -->
   <section class="hero xai-hero">
-    <div class="halo" aria-hidden="true"></div>
     <div class="wrap xai-wrap">
-      
-      <!-- Announcement Pill Badge -->
-      <a class="hero-badge" href="#platform">
-        <span class="badge-pill">NEW</span>
-        <span class="badge-txt">Meet Ramco Aviation 6.0 &middot; Next-Gen MRO &amp; Flight Ops</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </a>
 
+      <div class="hero-band">
+      <div class="hero-statement">
       <!-- Headline -->
       <h1 class="xai-title">
-        Frontier aviation software<br>for everything that <span class="underline-accent">flies</span>.
+        Aviation software<br>for everything that <span class="underline-accent">flies</span>.
       </h1>
 
       <!-- Lede -->
       <p class="xai-lede">
         Flight operations, Line MRO, Engine overhaul, Fleet airworthiness, and Supply chain.
-        Built natively on one real-time enterprise record.
+        Built on one live record.
       </p>
 
       <!-- CTA Row -->
       <div class="xai-cta-row">
         <a class="btn-xai-primary" href="#platform">
-          <span>See the Platform</span>
+          <span>See the platform</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
         <a class="btn-xai-secondary" href="#contact">
-          <span>Request a Walkthrough</span>
+          <span>Request a walkthrough</span>
         </a>
       </div>
+      </div>
+
+      <!-- the fleet the headline is talking about: eVTOL, UAS, fast jet, powerplant, rotary -->
+      <figure class="hero-fleet">
+        <picture>
+          <source media="(max-width: 760px)" srcset="assets/img/fleet-sm.webp" width="900" height="816">
+          <img src="assets/img/fleet.webp" alt="" width="1672" height="941"
+               fetchpriority="high" decoding="async">
+        </picture>
+      </figure>
+      </div>
+
+      <figure class="hero-airframe" aria-labelledby="airframe-title" hidden>
+        <figcaption class="hero-airframe-head">
+          <span id="airframe-title"><i></i> Live aircraft record</span>
+          <span>MSN 48217 &middot; A320neo &middot; In service</span>
+        </figcaption>
+        <div class="airframe-stage">
+          <svg class="airframe-schematic" viewBox="0 0 1200 390" role="img" aria-label="Top-down aircraft schematic connected to flight operations, maintenance, engineering, supply chain and finance">
+            <defs>
+              <linearGradient id="airframeWash" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9e8f7" stop-opacity=".16"/><stop offset="1" stop-color="#75a7cf" stop-opacity=".02"/></linearGradient>
+              <filter id="airframeGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <g class="airframe-grid"><path d="M0 78H1200M0 195H1200M0 312H1200"/><path d="M200 0V390M400 0V390M600 0V390M800 0V390M1000 0V390"/></g>
+            <g class="airframe-links"><path d="M218 80H420L520 153"/><path d="M982 80H780L680 153"/><path d="M190 292H410L516 234"/><path d="M1010 292H790L684 234"/><path d="M600 62V118"/></g>
+            <g class="airframe-node" transform="translate(34 54)"><rect width="184" height="52" rx="2"/><circle cx="16" cy="16" r="3"/><text x="16" y="34">FLIGHT OPERATIONS</text><text class="node-state" x="168" y="18" text-anchor="end">LIVE</text></g>
+            <g class="airframe-node" transform="translate(982 54)"><rect width="184" height="52" rx="2"/><circle cx="16" cy="16" r="3"/><text x="16" y="34">ENGINEERING</text><text class="node-state" x="168" y="18" text-anchor="end">SYNC</text></g>
+            <g class="airframe-node" transform="translate(6 266)"><rect width="184" height="52" rx="2"/><circle cx="16" cy="16" r="3"/><text x="16" y="34">LINE MAINTENANCE</text><text class="node-state" x="168" y="18" text-anchor="end">READY</text></g>
+            <g class="airframe-node" transform="translate(1010 266)"><rect width="184" height="52" rx="2"/><circle cx="16" cy="16" r="3"/><text x="16" y="34">SUPPLY + FINANCE</text><text class="node-state" x="168" y="18" text-anchor="end">CLEAR</text></g>
+            <g class="airframe-node airframe-node-top" transform="translate(508 10)"><rect width="184" height="52" rx="2"/><text x="92" y="22" text-anchor="middle">ONE OPERATING RECORD</text><text class="node-state" x="92" y="39" text-anchor="middle">48217 / CURRENT</text></g>
+            <g class="airframe-plane">
+              <path class="plane-fill" d="M600 68C615 68 623 83 625 107L632 164 793 211 793 229 635 205 628 299 690 340 690 350 613 330 605 375H595L587 330 510 350V340L572 299 565 205 407 229V211L568 164 575 107C577 83 585 68 600 68Z"/>
+              <path d="M600 68C615 68 623 83 625 107L632 164 793 211 793 229 635 205 628 299 690 340 690 350 613 330 605 375H595L587 330 510 350V340L572 299 565 205 407 229V211L568 164 575 107C577 83 585 68 600 68Z"/>
+              <path d="M600 84V356M568 164L632 164M565 205L635 205M572 299L628 299"/>
+              <ellipse cx="600" cy="188" rx="82" ry="82" class="record-ring"/><ellipse cx="600" cy="188" rx="56" ry="56" class="record-ring record-ring-inner"/><circle cx="600" cy="188" r="7" class="record-core" filter="url(#airframeGlow)"/>
+            </g>
+            <g class="airframe-callout"><circle cx="540" cy="131" r="4"/><text x="528" y="126" text-anchor="end">AIRWORTHINESS</text></g>
+            <g class="airframe-callout"><circle cx="673" cy="219" r="4"/><text x="685" y="224">WORK PACKAGE</text></g>
+            <g class="airframe-callout"><circle cx="557" cy="267" r="4"/><text x="545" y="272" text-anchor="end">PART TRACE</text></g>
+          </svg>
+        </div>
+        <div class="hero-airframe-foot"><span><b>01</b> Defect captured in flight</span><span><b>02</b> Work scoped before arrival</span><span><b>03</b> Part + contract verified</span><span><b>04</b> Release posted once</span></div>
+      </figure>
 
       <!-- Hero Showcase Bento Grid (x.ai style) -->
       <div class="hero-showcase">
@@ -71,7 +110,7 @@
         <div class="showcase-card">
           <div class="showcase-chat">
             <div class="chat-bubble user">Airborne defect noted: Hydraulic Sys B pressure fluctuation on descent.</div>
-            <div class="chat-bubble system">Natively synchronized to Line Station MRO work package #LP-482. Crew duty limits validated.</div>
+            <div class="chat-bubble system">Synced to Line Station MRO work package #LP-482. Crew duty limits validated.</div>
             <div class="chat-bubble user">Run risk assessment for next turnaround.</div>
             <div class="chat-bubble system">0 exceedances. Pre-flight EFB synced offline.</div>
           </div>
@@ -124,7 +163,7 @@
 
       <!-- Stats Metrics Bar -->
       <dl class="stats xai-stats">
-        <div><dt>Fleets operated</dt><dd data-count="24000">24,000+</dd></div>
+        <div><dt>Aircraft managed</dt><dd data-count="24000">24,000+</dd></div>
         <div><dt>Countries</dt><dd data-count="30">30</dd></div>
         <div><dt>Uptime SLA</dt><dd>99.9%</dd></div>
         <div><dt>Airworthiness</dt><dd>FAA &middot; EASA</dd></div>
@@ -135,116 +174,104 @@
   <!-- 02 - THE PROBLEM -->
   <section class="section" id="problem">
     <div class="wrap">
-      <div class="sec-head">
-        <span class="tag">02 / The Problem</span>
+      <div class="problem-intro">
         <h2>Your aircraft got smarter.<br><span class="dim">Your systems didn't.</span></h2>
-        <p class="lede">
-          Maintenance is in one system. Engineering is in another. Supply chain,
-          contracts and finance are each in a third. Every handover between them is
-          where a day gets lost, a part gets ordered twice, or a job gets done and
-          never invoiced.
+        <div class="problem-intro-copy">
+          <p>Maintenance is in one system. Engineering is in another. Supply chain, contracts and finance are each in a third. Every handover is where time, parts and revenue disappear.</p>
+          <dl class="problem-equation" aria-label="Disconnected system complexity">
+            <div><dt>Functions</dt><dd>8</dd></div>
+            <div><dt>Interfaces</dt><dd>28</dd></div>
+            <div><dt>Shared record</dt><dd>0</dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <ol class="problem-chain" aria-label="How disconnected systems compound operational loss">
+        <li><span class="chain-no">01</span><div><h3>Estimates that miss</h3><p>Fixed-price work is quoted before the panels come off. Non-routine findings arrive after the number is agreed.</p></div><em>Before induction</em></li>
+        <li><span class="chain-no">02</span><div><h3>No resource visibility</h3><p>Work is scheduled manually against a workforce and parts position nobody can see in real time.</p></div><em>During planning</em></li>
+        <li><span class="chain-no">03</span><div><h3>Inventory leakage</h3><p>Capital sits in bins nobody can account for while the same part gets bought again.</p></div><em>During execution</em></li>
+        <li><span class="chain-no">04</span><div><h3>Revenue that leaks</h3><p>Scrap limits pass without approval, upgrade differentials go uncharged and contract caps breach unnoticed.</p></div><em>At billing</em></li>
+      </ol>
+
+      <div class="problem-bridge"><p>All four have the same cause: no shared record.</p><span>Switch the model to see the difference.</span></div>
+
+      <figure class="architecture-compare" id="archModel" data-model="before" aria-labelledby="architectureTitle">
+        <figcaption class="arch-head" id="architectureTitle">
+          <div class="arch-metric">
+            <strong class="arch-count" id="archCount" aria-hidden="true">28</strong>
+            <div class="arch-metric-copy">
+              <span>point-to-point interfaces</span>
+              <small id="archMetricSub">Eight functions, each holding its own version of the aircraft</small>
+            </div>
+          </div>
+          <div class="arch-switch" role="group" aria-label="Operating model">
+            <button type="button" class="is-on" data-model="before" aria-pressed="true"><i></i>Disconnected estate</button>
+            <button type="button" data-model="after" aria-pressed="false"><i></i>One Ramco platform</button>
+          </div>
+        </figcaption>
+
+        <p class="arch-state" aria-live="polite">
+          <b data-state="before">Every function reconciles its own truth</b>
+          <b data-state="after">Every function operates on one record</b>
         </p>
-      </div>
 
-      <!-- Problem Cards Grid (4 columns) -->
-      <div class="problem-grid">
-        <div class="prob-card">
-          <div class="prob-card-head">
-            <div class="prob-icon" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-            </div>
-            <span class="prob-num">01</span>
-          </div>
-          <h3 class="prob-title">Estimates that miss</h3>
-          <p class="prob-desc">Fixed-price work quoted before the panels come off. Non-routine findings arrive after the number is agreed.</p>
+        <div class="arch-stage">
+          <svg class="arch-svg" viewBox="0 0 1000 540" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+            <g class="arch-mesh">
+              <path pathLength="1" d="M500 78 748.9 133.6" style="--i:0"/><path pathLength="1" d="M500 78 852 268" style="--i:1"/><path pathLength="1" d="M500 78 748.9 402.4" style="--i:2"/><path pathLength="1" d="M500 78 500 458" style="--i:3"/><path pathLength="1" d="M500 78 251.1 402.4" style="--i:4"/><path pathLength="1" d="M500 78 148 268" style="--i:5"/><path pathLength="1" d="M500 78 251.1 133.6" style="--i:6"/>
+              <path pathLength="1" d="M748.9 133.6 852 268" style="--i:7"/><path pathLength="1" d="M748.9 133.6 748.9 402.4" style="--i:8"/><path pathLength="1" d="M748.9 133.6 500 458" style="--i:9"/><path pathLength="1" d="M748.9 133.6 251.1 402.4" style="--i:10"/><path pathLength="1" d="M748.9 133.6 148 268" style="--i:11"/><path pathLength="1" d="M748.9 133.6 251.1 133.6" style="--i:12"/>
+              <path pathLength="1" d="M852 268 748.9 402.4" style="--i:13"/><path pathLength="1" d="M852 268 500 458" style="--i:14"/><path pathLength="1" d="M852 268 251.1 402.4" style="--i:15"/><path pathLength="1" d="M852 268 148 268" style="--i:16"/><path pathLength="1" d="M852 268 251.1 133.6" style="--i:17"/>
+              <path pathLength="1" d="M748.9 402.4 500 458" style="--i:18"/><path pathLength="1" d="M748.9 402.4 251.1 402.4" style="--i:19"/><path pathLength="1" d="M748.9 402.4 148 268" style="--i:20"/><path pathLength="1" d="M748.9 402.4 251.1 133.6" style="--i:21"/>
+              <path pathLength="1" d="M500 458 251.1 402.4" style="--i:22"/><path pathLength="1" d="M500 458 148 268" style="--i:23"/><path pathLength="1" d="M500 458 251.1 133.6" style="--i:24"/>
+              <path pathLength="1" d="M251.1 402.4 148 268" style="--i:25"/><path pathLength="1" d="M251.1 402.4 251.1 133.6" style="--i:26"/>
+              <path pathLength="1" d="M148 268 251.1 133.6" style="--i:27"/>
+            </g>
+
+            <g class="arch-breaks">
+              <g transform="translate(594.6 99.1)"><circle r="7.5"/><path d="M-3.2 -3.2 3.2 3.2M3.2 -3.2 -3.2 3.2"/></g>
+              <g transform="translate(654.3 279.1)"><circle r="7.5"/><path d="M-3.2 -3.2 3.2 3.2M3.2 -3.2 -3.2 3.2"/></g>
+              <g transform="translate(345.7 279.1)"><circle r="7.5"/><path d="M-3.2 -3.2 3.2 3.2M3.2 -3.2 -3.2 3.2"/></g>
+              <g transform="translate(401.4 131.2)"><circle r="7.5"/><path d="M-3.2 -3.2 3.2 3.2M3.2 -3.2 -3.2 3.2"/></g>
+              <g transform="translate(594.6 436.9)"><circle r="7.5"/><path d="M-3.2 -3.2 3.2 3.2M3.2 -3.2 -3.2 3.2"/></g>
+              <g transform="translate(405.4 436.9)"><circle r="7.5"/><path d="M-3.2 -3.2 3.2 3.2M3.2 -3.2 -3.2 3.2"/></g>
+            </g>
+
+            <g class="arch-spokes">
+              <path pathLength="1" d="M500 78 500 268" style="--i:0"/><path pathLength="1" d="M748.9 133.6 500 268" style="--i:1"/><path pathLength="1" d="M852 268 500 268" style="--i:2"/><path pathLength="1" d="M748.9 402.4 500 268" style="--i:3"/><path pathLength="1" d="M500 458 500 268" style="--i:4"/><path pathLength="1" d="M251.1 402.4 500 268" style="--i:5"/><path pathLength="1" d="M148 268 500 268" style="--i:6"/><path pathLength="1" d="M251.1 133.6 500 268" style="--i:7"/>
+            </g>
+            <g class="arch-pulse">
+              <path pathLength="1" d="M500 78 500 268" style="--i:0"/><path pathLength="1" d="M748.9 133.6 500 268" style="--i:1"/><path pathLength="1" d="M852 268 500 268" style="--i:2"/><path pathLength="1" d="M748.9 402.4 500 268" style="--i:3"/><path pathLength="1" d="M500 458 500 268" style="--i:4"/><path pathLength="1" d="M251.1 402.4 500 268" style="--i:5"/><path pathLength="1" d="M148 268 500 268" style="--i:6"/><path pathLength="1" d="M251.1 133.6 500 268" style="--i:7"/>
+            </g>
+
+            <g class="arch-core">
+              <circle class="arch-core-halo" cx="500" cy="268" r="96"/>
+              <circle class="arch-core-ring" cx="500" cy="268" r="78"/>
+              <rect x="425" y="240" width="150" height="56" rx="2"/>
+              <text x="500" y="263">RAMCO</text>
+              <text class="arch-core-sub" x="500" y="281">ONE OPERATING RECORD</text>
+            </g>
+
+            <g class="arch-nodes">
+              <g transform="translate(430 58)"><rect width="140" height="40" rx="2"/><text x="70" y="24">Maintenance</text></g>
+              <g transform="translate(678.9 113.6)"><rect width="140" height="40" rx="2"/><text x="70" y="24">Engineering</text></g>
+              <g transform="translate(782 248)"><rect width="140" height="40" rx="2"/><text x="70" y="24">Supply chain</text></g>
+              <g transform="translate(678.9 382.4)"><rect width="140" height="40" rx="2"/><text x="70" y="24">Contracts</text></g>
+              <g transform="translate(430 438)"><rect width="140" height="40" rx="2"/><text x="70" y="24">Finance</text></g>
+              <g transform="translate(181.1 382.4)"><rect width="140" height="40" rx="2"/><text x="70" y="24">Flight ops</text></g>
+              <g transform="translate(78 248)"><rect width="140" height="40" rx="2"/><text x="70" y="24">Records</text></g>
+              <g transform="translate(181.1 113.6)"><rect width="140" height="40" rx="2"/><text x="70" y="24">Warranty</text></g>
+            </g>
+          </svg>
         </div>
 
-        <div class="prob-card">
-          <div class="prob-card-head">
-            <div class="prob-icon" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M3 3v18h18"/>
-                <path d="m19 9-5 5-4-4-3 3"/>
-              </svg>
-            </div>
-            <span class="prob-num">02</span>
-          </div>
-          <h3 class="prob-title">No resource visibility</h3>
-          <p class="prob-desc">Manual work scheduling against a workforce and a parts position nobody can see in real time.</p>
-        </div>
+        <ul class="arch-outcomes">
+          <li><b data-state="before">Data drift</b><b data-state="after">One transaction</b></li>
+          <li><b data-state="before">Duplicate work</b><b data-state="after">Shared context</b></li>
+          <li><b data-state="before">Missed charges</b><b data-state="after">Invoice-ready</b></li>
+        </ul>
 
-        <div class="prob-card">
-          <div class="prob-card-head">
-            <div class="prob-icon" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
-                <path d="m3.3 7 8.7 5 8.7-5"/>
-                <path d="M12 22V12"/>
-              </svg>
-            </div>
-            <span class="prob-num">03</span>
-          </div>
-          <h3 class="prob-title">Inventory leakage</h3>
-          <p class="prob-desc">Capital parked in bins nobody can account for, while the same part gets bought again.</p>
-        </div>
-
-        <div class="prob-card">
-          <div class="prob-card-head">
-            <div class="prob-icon" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/>
-                <path d="M12 18V6"/>
-              </svg>
-            </div>
-            <span class="prob-num">04</span>
-          </div>
-          <h3 class="prob-title">Revenue that leaks</h3>
-          <p class="prob-desc">Scrap limits exceeded without approval. Upgrade differentials never charged. Caps breached unnoticed.</p>
-        </div>
-      </div>
-
-      <!-- Interactive Operating Model Architecture Visualizer -->
-      <div class="op-model">
-        <div class="op-model-head">
-          <div class="op-tag-wrap">
-            <span class="op-pulse"></span>
-            <span class="op-tag">OPERATING MODEL</span>
-          </div>
-          <div class="op-toggle" role="tablist" aria-label="Operating model view">
-            <button class="op-toggle-btn active" id="btnDisconnected" role="tab" aria-selected="true">
-              <span>Disconnected systems</span>
-            </button>
-            <button class="op-toggle-btn" id="btnUnified" role="tab" aria-selected="false">
-              <span>One Ramco platform</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="op-stage" id="opStage">
-          <div class="op-corner tl">+</div>
-          <div class="op-corner tr">+</div>
-          <div class="op-corner bl">+</div>
-          <div class="op-corner br">+</div>
-          <svg id="opSvg" viewBox="0 0 980 500" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"></svg>
-        </div>
-
-        <div class="op-foot">
-          <div class="op-foot-left">
-            <span class="op-foot-icon">&gt;</span>
-            <span id="opMetric">8 FUNCTIONS &middot; 28 POINT-TO-POINT INTERFACES TO BUILD, TEST AND MAINTAIN</span>
-          </div>
-          <span id="opStateTag" class="op-stat-pill">Spaghetti Architecture</span>
-        </div>
-      </div>
-
-      <p class="op-caption" id="opCaption">
-        Eight functions connected point to point need twenty-eight interfaces, and every one is a place data drifts or a charge goes missing. One platform needs none of them. <span class="dim"><i>(The arithmetic is ours; the operating-model argument is Ramco's.)</i></span>
-      </p>
+        <p class="architecture-note">Eight functions connected point to point require twenty-eight interfaces. One shared operating record requires none. <span>Arithmetic ours &middot; operating model Ramco&rsquo;s</span></p>
+      </figure>
     </div>
   </section>
 
@@ -252,12 +279,11 @@
   <section class="section" id="platform">
     <div class="wrap">
       <div class="sec-head">
-        <span class="tag">03 / Platform</span>
         <h2>Everything that happens<br>while your aircraft is<span class="dim"> on the ground.</span></h2>
         <p class="lede">
           Ramco is organised by the kind of maintenance event: a line turn, a hangar
           check, an engine visit, a component in a shop. Pick a zone and the stage
-          shows what that module actually works on.
+          shows what that module works on.
         </p>
       </div>
 
@@ -291,7 +317,6 @@
   <!-- 04 - CONTACT -->
   <section class="section closing" id="contact">
     <div class="wrap">
-      <span class="tag">04 / Contact</span>
       <h2 class="big">Bring us your<br>hardest turnaround.</h2>
       <p class="lede center">
         Send the visit that went sideways: the one that overran, or the one you
@@ -304,7 +329,7 @@
         <p class="form-note" role="status" aria-live="polite"></p>
       </form>
       <div class="logos" aria-label="Operators">
-        <span>Airbus New Zealand</span><span>Columbia Helicopters</span><span>Defense primes</span><span>National regulators</span>
+        <span>Airbus New Zealand</span><span>Columbia Helicopters</span>
       </div>
     </div>
   </section>
@@ -326,7 +351,7 @@
   }
 }
 </script>
-<script src="main.js?v=8"></script>
+<script src="main.js?v=11"></script>
 <script type="module" src="explorer.js?v=9"></script>
 </body>
 </html>
