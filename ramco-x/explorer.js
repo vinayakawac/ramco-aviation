@@ -18,7 +18,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { Reflector } from 'three/addons/objects/Reflector.js';
 import { ZONES } from './zones.js';
 import { createTurbofanEngine } from './engine_model.js';
 
@@ -101,19 +100,19 @@ function roughCanvas(size = 512) {
   return c;
 }
 
-/* A photographic studio as an equirect map: dark cyclorama, a large key
-   softbox high and forward, a cooler fill behind, and floor bounce. The
-   softbox is what you see travelling across the metal as it turns. */
+/* A black photographic studio as an equirect map: keep the cyclorama from
+   lifting the far field while preserving only the softbox shapes that give
+   the airframe its metal definition. */
 function studioCanvas() {
   const c = document.createElement('canvas');
   c.width = 1024; c.height = 512;
   const g = c.getContext('2d');
 
   const cyc = g.createLinearGradient(0, 0, 0, 512);
-  cyc.addColorStop(0.00, '#42464f');
-  cyc.addColorStop(0.40, '#23262d');
-  cyc.addColorStop(0.52, '#14161a');
-  cyc.addColorStop(1.00, '#0b0b0d');
+  cyc.addColorStop(0.00, '#090a0c');
+  cyc.addColorStop(0.40, '#040506');
+  cyc.addColorStop(0.52, '#010102');
+  cyc.addColorStop(1.00, '#000000');
   g.fillStyle = cyc;
   g.fillRect(0, 0, 1024, 512);
 
@@ -159,9 +158,9 @@ function fadeCanvas(size = 512) {
   return c;
 }
 
-/* Bay markings. Without them the mirror has no surface the eye can find, and
-   everything standing on it reads as floating. `bays` are [x, z, w, d] in metres. */
-function markingsCanvas(bays, extent, size = 2048) {
+/* A restrained studio grid gives the floor depth without becoming a hangar
+   diagram. It is deliberately only straight, evenly spaced linework. */
+function markingsCanvas(extent, size = 2048) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
   const g = c.getContext('2d');
@@ -170,41 +169,11 @@ function markingsCanvas(bays, extent, size = 2048) {
 
   g.clearRect(0, 0, size, size);
 
-  // a coarse grid, the way a poured floor is scored
-  g.strokeStyle = 'rgba(255,255,255,0.045)';
+  g.strokeStyle = 'rgba(255,255,255,0.10)';
   g.lineWidth = 2;
-  for (let m = -extent / 2; m <= extent / 2; m += 10) {
+  for (let m = -extent / 2; m <= extent / 2; m += 8) {
     g.beginPath(); g.moveTo(X(m), 0); g.lineTo(X(m), size); g.stroke();
     g.beginPath(); g.moveTo(0, X(m)); g.lineTo(size, X(m)); g.stroke();
-  }
-
-  for (const [bx, bz, bw, bd] of bays) {
-    const w = bw * px, d = bd * px;
-    const x = X(bx) - w / 2, y = X(bz) - d / 2;
-
-    // bay outline
-    g.strokeStyle = 'rgba(255,255,255,0.20)';
-    g.lineWidth = 4;
-    g.strokeRect(x, y, w, d);
-
-    // corner ticks, heavier than the outline
-    g.strokeStyle = 'rgba(255,255,255,0.42)';
-    g.lineWidth = 7;
-    const t = Math.min(w, d) * 0.16;
-    for (const [cx, cy, dx, dy] of [
-      [x, y, 1, 1], [x + w, y, -1, 1], [x, y + d, 1, -1], [x + w, y + d, -1, -1],
-    ]) {
-      g.beginPath();
-      g.moveTo(cx + dx * t, cy); g.lineTo(cx, cy); g.lineTo(cx, cy + dy * t);
-      g.stroke();
-    }
-
-    // centreline
-    g.strokeStyle = 'rgba(255,255,255,0.10)';
-    g.lineWidth = 3;
-    g.setLineDash([26, 22]);
-    g.beginPath(); g.moveTo(X(bx), y); g.lineTo(X(bx), y + d); g.stroke();
-    g.setLineDash([]);
   }
   return c;
 }
@@ -295,6 +264,7 @@ function boot() {
   renderer.toneMappingExposure = 1.3;
 
   const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
   const camera = new THREE.PerspectiveCamera(34, 1, 0.5, 900);
 
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -329,18 +299,17 @@ function boot() {
   });
 
   /* ---------- the space ----------
-     A dark polished floor, large enough that its edges never enter frame,
-     with the reflection faded out well before they would. */
+     A matte-black studio floor keeps the subjects grounded without creating a
+     mirrored duplicate beneath the aircraft. */
 
   const world = new THREE.Group();
   scene.add(world);
 
   const FLOOR = 300;
-  const floor = new Reflector(new THREE.PlaneGeometry(FLOOR, FLOOR), {
-    textureWidth: 1024,
-    textureHeight: 1024,
-    color: 0x4c525c,
-  });
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(FLOOR, FLOOR),
+    new THREE.MeshBasicMaterial({ color: 0x030303 })
+  );
   floor.rotation.x = -Math.PI / 2;
   world.add(floor);
 
@@ -367,10 +336,9 @@ function boot() {
   }
 
   const shadowTex = new THREE.CanvasTexture(shadowCanvas());
-  const bays = [];
 
   function paintFloor() {
-    const tex = new THREE.CanvasTexture(markingsCanvas(bays, FLOOR));
+    const tex = new THREE.CanvasTexture(markingsCanvas(FLOOR));
     tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
     const marks = new THREE.Mesh(
       new THREE.PlaneGeometry(FLOOR, FLOOR),
@@ -419,8 +387,6 @@ function boot() {
     blob.position.set(sx, 0.06, sz);
     blob.renderOrder = 2;
     world.add(blob);
-
-    bays.push([sx, sz, size.x * 1.35, size.z * 1.35]);
 
     const half = [size.x * 0.5, size.y * 0.5, size.z * 0.5];
     const len = lenAxis !== null ? lenAxis : (half[2] >= half[0] ? 2 : 0);
@@ -903,6 +869,22 @@ function boot() {
   let spin = 0, drift = 0;
   let dragging = false, held = false;
   let px = 0, py = 0;
+  let cameraTravel = null;
+  const MAX_ELEVATION = Math.PI / 2 - 0.08;
+
+  const shortestAngle = (from, to) => {
+    const fullTurn = Math.PI * 2;
+    return ((to - from + Math.PI) % fullTurn + fullTurn) % fullTurn - Math.PI;
+  };
+
+  function beginCameraTravel() {
+    cameraTravel = {
+      from: { ...cam },
+      to: { ...goal },
+      startedAt: performance.now(),
+      duration: 720,
+    };
+  }
 
   function select(i, instant) {
     active = i;
@@ -914,12 +896,17 @@ function boot() {
     buildPins(z);
 
     goal.theta = z.cam.theta;
-    goal.phi = z.cam.phi;
+    goal.phi = Math.min(z.cam.phi, MAX_ELEVATION);
     goal.dist = z.cam.dist;
     const t = acToWorld({ x: z.cam.target[0], y: z.cam.target[1], z: z.cam.target[2] }, new THREE.Vector3());
     goal.tx = t.x; goal.ty = t.y; goal.tz = t.z;
     drift = 0;
-    if (instant || reduced) Object.assign(cam, goal);
+    if (instant || reduced) {
+      cameraTravel = null;
+      Object.assign(cam, goal);
+    } else {
+      beginCameraTravel();
+    }
   }
 
   /* ---------- zone callouts ----------
@@ -971,6 +958,10 @@ function boot() {
   /* ---------- input ---------- */
 
   const down = (e) => {
+    // Taking control of the orbit should never pull the camera back onto an
+    // in-flight automated move.
+    cameraTravel = null;
+    Object.assign(goal, cam);
     dragging = true; held = true;
     viewport.classList.add('grabbing');
     px = (e.touches ? e.touches[0].clientX : e.clientX);
@@ -981,7 +972,7 @@ function boot() {
     const cx = (e.touches ? e.touches[0].clientX : e.clientX);
     const cy = (e.touches ? e.touches[0].clientY : e.clientY);
     goal.theta -= (cx - px) * 0.006;
-    goal.phi = Math.max(0.45, Math.min(2.05, goal.phi - (cy - py) * 0.005));
+    goal.phi = Math.max(0.45, Math.min(MAX_ELEVATION, goal.phi - (cy - py) * 0.005));
     px = cx; py = cy;
     if (e.cancelable && e.touches) e.preventDefault();
   };
@@ -1029,17 +1020,37 @@ function boot() {
   }
 
   const lerp = (a, b, t) => a + (b - a) * t;
+  let lastFrameAt = performance.now();
 
-  renderer.setAnimationLoop(() => {
+  renderer.setAnimationLoop((now) => {
     if (!visible || !w || !stage) return;
 
-    const t = reduced ? 1 : 0.055;
-    cam.theta = lerp(cam.theta, goal.theta, t);
-    cam.phi = lerp(cam.phi, goal.phi, t);
-    cam.dist = lerp(cam.dist, goal.dist, t);
-    cam.tx = lerp(cam.tx, goal.tx, t);
-    cam.ty = lerp(cam.ty, goal.ty, t);
-    cam.tz = lerp(cam.tz, goal.tz, t);
+    const dt = Math.min((now - lastFrameAt) / 1000, 0.1);
+    lastFrameAt = now;
+
+    if (cameraTravel) {
+      const p = Math.min((now - cameraTravel.startedAt) / cameraTravel.duration, 1);
+      // A decisive move with a soft arrival: the camera travels as one
+      // continuous orbit instead of independently chasing six values.
+      const eased = 1 - Math.pow(1 - p, 4);
+      const { from, to } = cameraTravel;
+      cam.theta = from.theta + shortestAngle(from.theta, to.theta) * eased;
+      cam.phi = lerp(from.phi, to.phi, eased);
+      cam.dist = lerp(from.dist, to.dist, eased);
+      cam.tx = lerp(from.tx, to.tx, eased);
+      cam.ty = lerp(from.ty, to.ty, eased);
+      cam.tz = lerp(from.tz, to.tz, eased);
+      if (p === 1) cameraTravel = null;
+    } else {
+      // Preserve the gentle manual-orbit damping, independent of frame rate.
+      const t = reduced ? 1 : 1 - Math.exp(-3.4 * dt);
+      cam.theta += shortestAngle(cam.theta, goal.theta) * t;
+      cam.phi = lerp(cam.phi, goal.phi, t);
+      cam.dist = lerp(cam.dist, goal.dist, t);
+      cam.tx = lerp(cam.tx, goal.tx, t);
+      cam.ty = lerp(cam.ty, goal.ty, t);
+      cam.tz = lerp(cam.tz, goal.tz, t);
+    }
 
     // a narrow viewport has to stand further back or the subject runs off frame
     const fit = 1.45 / Math.min(camera.aspect, 1.45);
