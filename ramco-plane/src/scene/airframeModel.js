@@ -24,17 +24,24 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { PALETTE } from './materials.js';
 
 import A320_URL from '../../assets/models/a320.glb?url';
+import B738_URL from '../../assets/models/b738.glb?url';
+import B739_URL from '../../assets/models/b739.glb?url';
 
 /**
- * Only the A320 ships here. The walkthrough build carries all three so its stations can
- * animate named control surfaces; this page shows one hero object from the outside, so
- * the extra 1.3 MB would buy nothing.
+ * All three airframes, so plane.html can switch between them for inspection. The main
+ * scroll page still boots the A320 only — the other two are fetched on demand, when the
+ * inspector asks for them, so the landing path stays a single 431 kB model.
  *
  * `up` and `nose` are the file's own axis convention *before* normalisation — measured,
- * not assumed. a320.glb is Y-up with its nose on -Z, so it needs turning around.
+ * not assumed, because the three come from different FlightGear authors and do not agree.
+ * All three carry their fin on the positive end, so every one of them needs turning around.
+ *
+ * `label` is what the inspector's switcher shows.
  */
 export const AIRFRAMES = {
-  a320: { url: A320_URL, up: [0, 1, 0], nose: [0, 0, -1], len: 38.3 },
+  a320: { url: A320_URL, up: [0, 1, 0], nose: [0, 0, -1], len: 38.3, label: 'A320' },
+  b738: { url: B738_URL, up: [0, 0, 1], nose: [-1, 0, 0], len: 39.4, label: '737-800' },
+  b739: { url: B739_URL, up: [0, 1, 0], nose: [0, 0, -1], len: 40.6, label: '737NG' },
 };
 
 export const DEFAULT_AIRFRAME = 'a320';

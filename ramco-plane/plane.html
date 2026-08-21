@@ -134,6 +134,58 @@
     font-weight: 600;
   }
 
+  /* Aircraft switcher */
+  #fleet {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(10, 30, 56, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 0.5rem 0.7rem;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  }
+  #fleet .fleet-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    color: #7e9dc4;
+    padding: 0 0.4rem 0 0.2rem;
+  }
+  .fleet-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #e2eaf4;
+    padding: 0.42rem 0.85rem;
+    border-radius: 18px;
+    font-family: 'Archivo', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .fleet-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+  }
+  .fleet-btn.active {
+    background: #d3823f;
+    border-color: #d3823f;
+    color: #0b1c2d;
+    box-shadow: 0 0 12px rgba(211, 130, 63, 0.5);
+  }
+  /* A model still downloading: readable, but clearly not ready. */
+  .fleet-btn.loading {
+    opacity: 0.55;
+    cursor: progress;
+  }
+  .fleet-btn:disabled {
+    cursor: not-allowed;
+  }
+
   /* Copy Toast Notification */
   #toast {
     position: fixed;
@@ -169,6 +221,10 @@
       <span>POS: X:<b id="tel-x">0.0</b> Y:<b id="tel-y">0.0</b> Z:<b id="tel-z">0.0</b></span>
       <span>YAW:<b id="tel-yaw">0°</b> PITCH:<b id="tel-pitch">0°</b></span>
       <span>DIST:<b id="tel-dist">70</b></span>
+    </div>
+
+    <div id="fleet">
+      <span class="fleet-label">AIRCRAFT</span>
     </div>
 
     <div class="hud-panel">

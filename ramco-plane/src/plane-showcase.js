@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { loadAirframe, DEFAULT_AIRFRAME } from './scene/airframeModel.js';
+import { loadAirframe, DEFAULT_AIRFRAME, AIRFRAMES } from './scene/airframeModel.js';
 
 const SOLID_BLUE = 0x143b6c;
 
@@ -18,6 +18,7 @@ const dragPadBtn = document.getElementById('drag-pad-btn');
 const btnCenter = document.getElementById('btn-center');
 const btnCopy = document.getElementById('btn-copy');
 const toastEl = document.getElementById('toast');
+const fleetEl = document.getElementById('fleet');
 
 const telX = document.getElementById('tel-x');
 const telY = document.getElementById('tel-y');
@@ -135,10 +136,98 @@ window.addEventListener('pointerup', () => {
 const aircraft = new THREE.Group();
 scene.add(aircraft);
 
-// Load the A320 airframe
-loadAirframe(DEFAULT_AIRFRAME, 38).then((shell) => {
+/**
+ * Free every buffer the outgoing airframe owns.
+ *
+ * Materials are shared with the palette cache in materials.js, so they are deliberately
+ * left alone — disposing them would blank the *next* model too. Geometry and the GLB's
+ * own textures are per-model and are ours to release.
+ */
+function disposeAirframe(root) {
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    o.geometry?.dispose();
+    for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+      if (m?.map) m.map.dispose();
+    }
+  });
+}
+
+/* --- Aircraft switcher --- */
+let current = null; // the shell in the scene
+let activeKey = null; // which airframe it is
+let pending = null; // key of an in-flight load, so a double-click cannot land twice
+
+const fleetButtons = new Map();
+
+/**
+ * Swap the displayed airframe, leaving the camera exactly where the user put it.
+ *
+ * Each model is scaled to its *own* real length rather than a common 38 m, so switching
+ * shows the true size difference between the types — the point of having a switcher.
+ *
+ * @param {string} key key into AIRFRAMES
+ */
+async function showAirframe(key) {
+  if (key === activeKey || key === pending) return;
+
+  const spec = AIRFRAMES[key];
+  if (!spec) return;
+
+  pending = key;
+  const btn = fleetButtons.get(key);
+  btn?.classList.add('loading');
+  fleetButtons.forEach((b) => (b.disabled = true));
+
+  let shell;
+  try {
+    shell = await loadAirframe(key, spec.len);
+  } catch (err) {
+    console.warn(`[ramco] could not load airframe "${key}"`, err);
+    // Leave whatever is on screen in place — a failed switch must not empty the stage.
+    btn?.classList.remove('loading');
+    fleetButtons.forEach((b) => (b.disabled = false));
+    pending = null;
+    return;
+  }
+
+  // A newer click may have landed while this one was in flight; that load wins, and this
+  // shell is dropped before it ever reaches the scene.
+  if (pending !== key) {
+    disposeAirframe(shell);
+    return;
+  }
+
+  if (current) {
+    aircraft.remove(current);
+    disposeAirframe(current);
+  }
+
   aircraft.add(shell);
-});
+  current = shell;
+  activeKey = key;
+  pending = null;
+
+  btn?.classList.remove('loading');
+  fleetButtons.forEach((b, k) => {
+    b.disabled = false;
+    b.classList.toggle('active', k === activeKey);
+  });
+}
+
+// Build one button per registered airframe.
+for (const [key, spec] of Object.entries(AIRFRAMES)) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'fleet-btn';
+  btn.textContent = spec.label ?? key.toUpperCase();
+  btn.title = `${spec.label ?? key} — ${spec.len} m`;
+  btn.addEventListener('click', () => showAirframe(key));
+  fleetEl.appendChild(btn);
+  fleetButtons.set(key, btn);
+}
+
+showAirframe(DEFAULT_AIRFRAME);
 
 /* --- Studio Lighting for Solid Blue Backdrop --- */
 const ambientLight = new THREE.AmbientLight(0xdbe9f9, 1.4);

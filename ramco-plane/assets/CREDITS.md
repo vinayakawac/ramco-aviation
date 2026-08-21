@@ -1,14 +1,21 @@
 # Third-party assets
 
-## `models/a320.glb`
+## `models/a320.glb`, `models/b738.glb`, `models/b739.glb`
+
+All three come from the same upstream and carry the same licence. `plane.html` lets the
+viewer switch between them; `a320.glb` is the only one the scroll page itself loads.
+
+| File | Original model | Shipped size | Length |
+|---|---|---|---|
+| `a320.glb` | [FGMEMBERS/A320-family](https://github.com/FGMEMBERS/A320-family) | 431 kB | 38.3 m |
+| `b738.glb` | [FGMEMBERS/737-800](https://github.com/FGMEMBERS/737-800) | 672 kB | 39.4 m |
+| `b739.glb` | [FGMEMBERS/737NG](https://github.com/FGMEMBERS/737NG) | 635 kB | 40.6 m |
 
 | | |
 |---|---|
 | Source | [Flightradar24/fr24-3d-models](https://github.com/Flightradar24/fr24-3d-models) |
-| Original model | [FGMEMBERS/A320-family](https://github.com/FGMEMBERS/A320-family), via the [FlightGear](http://www.flightgear.org/) project |
+| Upstream project | [FlightGear](http://www.flightgear.org/) / [FGMEMBERS](https://github.com/FGMEMBERS) |
 | Licence | **GPLv2** |
-| Shipped size | 431 kB (glTF 2.0 + Draco) |
-| Length | 38.3 m nose-to-tail |
 
 ### Read this before publishing
 
