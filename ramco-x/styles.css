@@ -1411,6 +1411,19 @@ h2.big { font-size: clamp(2.4rem, 8vw, 6rem); }
 .logos span { transition: color .3s; }
 .logos span:hover { color: var(--fg-mid); }
 
+#contact {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('assets/img/end.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+@media (max-width: 760px) {
+  #contact {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('assets/img/end-sm.webp');
+  }
+}
+
 /* ---------- footer ---------- */
 
 .foot { position: relative; z-index: 1; padding: 28px 0; }
