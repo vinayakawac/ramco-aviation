@@ -178,6 +178,10 @@ h2.big { font-size: clamp(2.4rem, 8vw, 6rem); }
 .hero-band {
   position: relative;
   padding-bottom: clamp(30px, 4vw, 60px);
+  min-height: calc(100svh - clamp(124px, 13vw, 156px));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .hero-statement {
   position: relative; z-index: 2;
