@@ -1,0 +1,24 @@
+{
+  "name": "aircraft-001",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "AIRCRAFT-001 — interactive Three.js aircraft website",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "@types/three": "^0.185.0",
+    "typescript": "^5.6.0",
+    "vite": "^8.2.2",
+    "vitest": "^5.0.0"
+  }
+}

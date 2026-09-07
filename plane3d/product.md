@@ -1,4 +1,4 @@
-# ASTRA AIRCRAFT ATLAS --- AIRCRAFT-001
+# AIRCRAFT-001
 
 ## Production Specification for a Consistent Three.js Aircraft Model
 
@@ -33,8 +33,8 @@ aircraft that could be photographed from any direction.
 
 ### Primary objective
 
-Create a realistic, optimized, interactive 3D aircraft for the ASTRA
-Aircraft Atlas in Three.js, with:
+Create a realistic, optimized, interactive 3D aircraft for
+AIRCRAFT-001 in Three.js, with:
 
 1.  Accurate exterior proportions
 2.  Consistent geometry across all views
@@ -350,7 +350,7 @@ AIRCRAFT-001
 ```
 
 Use names that remain stable. These names will later become selectors
-for the Aircraft Atlas UI.
+for the AIRCRAFT-001 UI.
 
 ------------------------------------------------------------------------
 
@@ -813,7 +813,7 @@ Use lighting states rather than rebuilding the interior.
 
 # 21. Camera System
 
-The Aircraft Atlas should have canonical cameras.
+AIRCRAFT-001 should have canonical cameras.
 
 ``` text
 LEFT
@@ -1007,7 +1007,7 @@ Maximum detail
 Close inspection
 
 LOD1 — NORMAL
-Normal Aircraft Atlas viewing
+Normal AIRCRAFT-001 viewing
 
 LOD2 — DISTANT
 Simplified exterior silhouette
@@ -1356,7 +1356,7 @@ CUTAWAY
 FULL
 ```
 
-This allows the same model to serve multiple atlas modes.
+This allows the same model to serve multiple viewing modes.
 
 ------------------------------------------------------------------------
 
@@ -1566,7 +1566,7 @@ CAMERA VALIDATION
        ↓
 INTERACTION
        ↓
-FINAL AIRCRAFT ATLAS
+FINAL AIRCRAFT-001 WEBSITE
 ```
 
 ------------------------------------------------------------------------

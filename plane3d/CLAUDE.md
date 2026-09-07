@@ -51,14 +51,34 @@ never carry it into code, HTML, package.json, or docs.
 
 ## 3. Coordinate frame (decided — surfaced tradeoff)
 
-`product.md` §4 uses X=forward, Y=starboard, Z=up. Three.js is Y-up. Resolution:
+`product.md` §4 asks for X=forward, Y=starboard, Z=up. That triple is LEFT-handed and cannot be
+produced by any rotation in Three.js (right-handed). Adjudicated: keep X forward and Z up exactly as
+specified, which forces **+Y = PORT (left)** and −Y = starboard. Never "fix" this with a negative scale.
 
-- All aircraft geometry lives under a group named `AIRCRAFT-001` and is authored in spec axes
-  (X forward, Y starboard, Z up). Dimension and symmetry tests run in this frame.
-- A single parent group `AIRCRAFT_ROOT` applies one fixed rotation (−90° about X) to place the aircraft in
-  Three.js Y-up world space. Nothing else ever rotates the root.
-- Origin: on the fuselage centerline at the nose tip. Because +X is forward, the nose sits at X = 0 and the
-  tail cone ends at X = −39.5. Z = 0 is the fuselage centerline, not the ground. Never move the origin.
+- All aircraft geometry lives under a group named `AIRCRAFT-001` and is authored in that frame
+  (X forward, Y port, Z up). Dimension and symmetry tests run in this frame.
+- Symmetric parts are authored once on the STARBOARD side (−Y, names ending `_R`) and mirrored in
+  code by `mirrorObjectY()` to make the port parts (`_L`). Cargo doors are starboard only.
+- A single parent group `AIRCRAFT_ROOT` applies one fixed rotation (−90° about X) to place the aircraft
+  in Three.js Y-up world space (spec (x, y, z) → world (x, z, −y); port = world −Z). Nothing else ever
+  rotates the root.
+- Origin: on the fuselage centerline at the nose tip. Because +X is forward, the nose sits at X = 0 and
+  the tail cone ends at X = −39.5. Z = 0 is the fuselage centerline; the ground is Z = −4.1. Never move
+  the origin.
+- Canonical view azimuths are measured from the nose toward +Y (port): LEFT = +90°, RIGHT = −90°.
+
+### Scale (decided)
+
+Spec meters are authored through `m()` with `UNIT_SCALE = 0.25`, so the aircraft is ~9.9 scene units
+long. Proportions are exact; only the unit changes. Unit scale has NO effect on load time or frame rate.
+Performance is controlled by the quality tiers in `src/core/quality.ts` (1080p / 1440p / 4K): pixel-ratio
+cap, procedural segment density, shadow-map size and triangle budget.
+
+### Gear stations (adjudicated)
+
+`product.md` lists wheelbase 13.0 m AND nose-to-main-gear 12.6 m, which would put the nose gear 0.4 m
+ahead of the nose tip. Wheelbase 13.0 is locked; the nose gear sits 4.7 m aft of the nose (realistic
+narrowbody station) and the main gear at 17.7 m. Do not re-open.
 
 ## 4. Scene graph and metadata
 
