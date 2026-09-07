@@ -82,7 +82,7 @@ function boot(): void {
   let frames = 0, fpsT = 0, lastTick = performance.now();
   function tick(): void {
     const now = performance.now();
-    const dt = Math.min(0.05, (now - lastTick) / 1000);
+    const dt = Math.min(0.1, (now - lastTick) / 1000);
     lastTick = now;
     animations.update(dt);
     exploded.update(dt);
@@ -122,7 +122,8 @@ function boot(): void {
   }
   // dev hook: capture the current camera offscreen (works even when the pane is hidden)
   const capture = async (name: string): Promise<void> => {
-    animations.settle(); built.root.updateMatrixWorld(true); blueprint.update();
+    // fast-forward every transition so the capture is a settled, deterministic frame
+    animations.settle(); exploded.update(10); cameras.update(10); built.root.updateMatrixWorld(true); blueprint.update();
     const png = sceneShell.renderToPNG(cameras.camera, 1600, 900);
     await fetch('/__render', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ day: new Date().toISOString().slice(0, 10), name, png }) });
   };

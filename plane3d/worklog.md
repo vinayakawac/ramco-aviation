@@ -15,3 +15,14 @@
 - [x] STEP 22–23 — GLB export via GLTFExporter (UI button) and GLTFLoader import path.
 - [ ] STEP 21/24/25 — Phase C detail pass against reference sheets (panel lines, nacelle detail, cockpit detail), tier profiling on real 4K hardware, freeze master.
 - [ ] Known gaps: cheatline is a surface band (no painted texture); cabin has no PSU strip; nav-light colours not yet side-specific.
+
+### Verification log (2026-09-07, end of day)
+
+- `npm test`: 28/28 passing (dimensions, symmetry, metadata, articulation of gear/flaps/slats/spoilers/doors/cargo/rudder, budgets, branding).
+- Canonical renders: 14 views × realistic + blueprint in `logs/renders/2026-09-07/`; LEFT/RIGHT/TOP/BOTTOM
+  orientation matches the reference sheets after the frame adjudication (CLAUDE.md §3).
+- Mode captures reviewed: interior ghost, cutaway (skin-only clip), exploded, system highlight, blueprint, gear up,
+  doors + cargo doors open, flaps/slats/spoilers extended.
+- Gate 1 (silhouette) reviewed by eye against `aircraft.png` / `exterior-3_4-view.png`: fuselage, fin, wing planform,
+  engine placement and gear read correctly. Phase C candidates: nacelle inlet lip shape, wing-root fairing blend,
+  finer cockpit glazing frames, painted cheatline texture.
