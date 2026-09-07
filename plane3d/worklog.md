@@ -1,4 +1,4 @@
-# Worklog — ASTRA Aircraft Atlas / AIRCRAFT-001
+# Worklog — AIRCRAFT-001
 
 ## 2026-09-07
 

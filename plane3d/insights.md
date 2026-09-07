@@ -1,4 +1,4 @@
-# Insights — ASTRA Aircraft Atlas / AIRCRAFT-001
+# Insights — AIRCRAFT-001
 
 ## 2026-09-07 — Spec and reference review
 

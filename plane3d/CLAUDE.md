@@ -1,4 +1,4 @@
-# PROJECT: ASTRA Aircraft Atlas — AIRCRAFT-001 (Three.js website)
+# PROJECT: AIRCRAFT-001 (Three.js website)
 
 Read this section first. It overrides the general rules further below when they conflict.
 
@@ -14,6 +14,10 @@ camera, animation, and UI decision must trace back to it. When anything disagree
 5. Photorealistic renders inside those sheets
 
 Never distort the model to match one image. Never treat text printed on an image as truth (§45).
+
+**Naming:** the product, site title, package name and any UI text use `AIRCRAFT-001` only. The "ASTRA
+Aircraft Atlas" branding that appears in `product.md` and on the reference sheets is NOT the project name;
+never carry it into code, HTML, package.json, or docs.
 
 ### Locked master dimensions (meters)
 

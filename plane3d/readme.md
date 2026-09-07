@@ -1,6 +1,6 @@
-# ASTRA Aircraft Atlas — AIRCRAFT-001
+# AIRCRAFT-001
 
-Interactive Three.js website presenting one canonical narrowbody aircraft (AIRCRAFT-001) from every
+Interactive Three.js website presenting one canonical narrowbody aircraft, AIRCRAFT-001, from every
 angle: realistic and blueprint render modes, selectable systems, cutaway and exploded views,
 articulated gear, doors and control surfaces, and a modeled cockpit and cabin.
 
